@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SynRG '26 schedule">
+  <rect width="64" height="64" rx="14" fill="#1c2b21"/>
+  <rect x="14" y="16" width="36" height="34" rx="5" fill="#f3f6f1"/>
+  <rect x="14" y="16" width="36" height="9" rx="4" fill="#f2b33d"/>
+  <rect x="21" y="11" width="4" height="9" rx="2" fill="#f3f6f1"/>
+  <rect x="39" y="11" width="4" height="9" rx="2" fill="#f3f6f1"/>
+  <path d="M22 41c0-6 5-11 12-11-1 7-5 11-12 11z" fill="#2f6b3a"/>
+  <path d="M22 41c4-3 7-6 10-9" stroke="#f3f6f1" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+</svg>

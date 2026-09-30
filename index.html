@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SynRG '26 Schedule</title>
+<meta name="theme-color" content="#1c2b21">
+<meta name="description" content="Schedule, rides and map for SynRG '26 at Overdevest Nurseries, October 6-8, 2026.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+
+<script>
+/* ==========================================================================
+   EDIT EVERYTHING IN THIS BLOCK. Nothing below it needs to be touched.
+
+   Text that appears on the page comes in pairs: { en: "…", es: "…" }.
+   A plain "…" string is fine for names that are the same in both languages
+   (Lucas Greenhouses, Tractor barn is NOT — it has a Spanish name).
+   Anything left as "" shows an orange ADD chip while EDIT_MODE is true.
+   ⚑ THIS PAGE IS PUBLIC ON THE INTERNET — no Wi-Fi passwords, no phone
+     numbers you would not print on a flyer.
+   ========================================================================== */
+
+/* Turn OFF before the QR code goes up: while true, every blank field prints an
+   orange ADD chip, which is a working note, not something a guest should see. */
+const EDIT_MODE = true;
+
+const CONFIG = {
+  eventName: "SynRG '26",
+  orgName:   { en: "Hosted by Overdevest Nurseries", es: "Organizado por Overdevest Nurseries" },
+  dateLabel: { en: "October 6–8, 2026", es: "6–8 de octubre de 2026" },
+
+  // Who to call. Blank = no call button. Public page: only a number you would
+  // print on a flyer.
+  contactName:  "",
+  contactPhone: "",
+
+  // ---- PLACES -------------------------------------------------------------
+  // Every "where" on the schedule points at one of these by its id.
+  // onSite: true  = at Overdevest (shown on the map when it is drawn)
+  // url           = a web page to link to (off-site stops)
+  // n             = the number on the map
+  places: {
+    barn:       { n: 1, onSite: true,  name: { en: "Tractor barn",    es: "Granero de tractores" } },
+    breakroom:  { n: 2, onSite: true,  name: { en: "Break room",      es: "Sala de descanso" } },
+    headhouse:  { n: 3, onSite: true,  name: { en: "Headhouse",       es: "Headhouse (propagación)" } },
+    dock:       { n: 4, onSite: true,  name: { en: "Loading dock",    es: "Muelle de carga" } },
+    trial:      { n: 5, onSite: true,  name: { en: "Trial garden",    es: "Jardín de pruebas" } },
+    conference: { n: 6, onSite: true,  name: { en: "Conference room", es: "Sala de conferencias" } },
+    hotel:      { onSite: false, name: "Fairfield Inn & Suites", url: "" },
+    lucas:      { onSite: false, name: "Lucas Greenhouses", url: "https://www.lucasgreenhouses.com/" },
+    brewery:    { onSite: false, name: "Farmers & Bankers Brewing", url: "https://farmersandbankersbrewing.com/" },
+  },
+
+  // ---- THE SCHEDULE -------------------------------------------------------
+  // date          YYYY-MM-DD
+  // start / end   24-hour "HH:MM"
+  // where         a place id from above, or "" if the block has no one place
+  // ride          "provided" = we drive (bus/van) · "own" = people get there themselves
+  // details       optional sentence
+  // stops         optional sub-items: { name, details }
+  // groups        true = this block points at the working-groups table
+  days: [
+    {
+      date: "2026-10-06",
+      label: { en: "Tuesday, October 6", es: "Martes 6 de octubre" },
+      short: { en: "Tue", es: "Mar" },
+      blocks: [
+        { start: "14:00", end: "14:15", where: "", ride: "own",
+          title: { en: "Arrival and welcome", es: "Llegada y bienvenida" },
+          details: { en: "Make your own way to Overdevest Nurseries.", es: "Llegue por su cuenta a Overdevest Nurseries." } },
+        { start: "14:15", end: "17:00", where: "",
+          title: { en: "Nursery tour", es: "Recorrido del vivero" },
+          details: { en: "A tour of the nursery, which may include the Trial Gardens.", es: "Un recorrido por el vivero, que puede incluir los jardines de prueba." } },
+        { start: "17:00", end: "20:00", where: "",
+          title: { en: "Dinner and cornhole", es: "Cena y cornhole" },
+          details: { en: "Dinner, then the cornhole competition.", es: "Cena y después la competencia de cornhole." } },
+        { start: "20:00", end: "20:30", where: "hotel", ride: "own",
+          title: { en: "To the hotel", es: "Al hotel" },
+          details: { en: "Everyone makes their own way to the Fairfield Inn & Suites.", es: "Cada quien llega por su cuenta al Fairfield Inn & Suites." } },
+      ],
+    },
+    {
+      date: "2026-10-07",
+      label: { en: "Wednesday, October 7", es: "Miércoles 7 de octubre" },
+      short: { en: "Wed", es: "Mié" },
+      blocks: [
+        { start: "07:15", end: "07:45", where: "hotel", ride: "provided",
+          title: { en: "Ride to the nursery", es: "Transporte al vivero" },
+          details: { en: "Leaves the Fairfield Inn & Suites at 7:15.", es: "Sale del Fairfield Inn & Suites a las 7:15." } },
+        { start: "07:45", end: "08:00", where: "",
+          title: { en: "Arrive at Overdevest", es: "Llegada a Overdevest" } },
+        { start: "08:00", end: "09:30", where: "", groups: true,
+          title: { en: "Working groups · Session 1", es: "Grupos de trabajo · Sesión 1" },
+          details: { en: "Each group meets in its own room — see the table below.", es: "Cada grupo se reúne en su propio lugar — vea la tabla abajo." } },
+        { start: "09:30", end: "09:45", where: "",
+          title: { en: "Break and WF partner sales update", es: "Descanso y actualización de ventas de socios WF" } },
+        { start: "09:45", end: "10:30", where: "barn",
+          title: { en: "Harnessing AI to Solve Problems", es: "Usar la IA para resolver problemas" } },
+        { start: "10:30", end: "12:00", where: "", groups: true,
+          title: { en: "Working groups · Session 2", es: "Grupos de trabajo · Sesión 2" },
+          details: { en: "Same rooms as Session 1 — see the table below.", es: "Los mismos lugares que la Sesión 1 — vea la tabla abajo." } },
+        { start: "12:00", end: "13:30", where: "",
+          title: { en: "Lunch with special guest Adept Ag", es: "Almuerzo con el invitado especial Adept Ag" } },
+        { start: "13:30", end: "14:00", where: "lucas", ride: "provided",
+          title: { en: "Ride to Lucas Greenhouses", es: "Transporte a Lucas Greenhouses" } },
+        { start: "14:00", end: "17:00", where: "lucas",
+          title: { en: "Tour of Lucas Greenhouses", es: "Recorrido de Lucas Greenhouses" } },
+        { start: "17:00", end: "18:00", where: "brewery", ride: "provided",
+          title: { en: "Ride to Farmers & Bankers Brewing", es: "Transporte a Farmers & Bankers Brewing" } },
+        { start: "18:00", end: "20:00", where: "brewery",
+          title: { en: "Dinner at the brewery", es: "Cena en la cervecería" } },
+        { start: "20:00", end: "20:30", where: "", ride: "provided",
+          title: { en: "Rides back", es: "Regreso" },
+          stops: [
+            { name: { en: "Buses to the hotel", es: "Autobuses al hotel" },
+              details: { en: "Two buses to the Fairfield Inn & Suites — an earlier one and a later one.", es: "Dos autobuses al Fairfield Inn & Suites — uno más temprano y otro más tarde." } },
+            { name: { en: "Vans to Overdevest", es: "Camionetas a Overdevest" },
+              details: { en: "For the Overdevest team and anyone else heading back to the nursery.", es: "Para el equipo de Overdevest y cualquiera que regrese al vivero." } },
+          ] },
+      ],
+    },
+    {
+      date: "2026-10-08",
+      label: { en: "Thursday, October 8", es: "Jueves 8 de octubre" },
+      short: { en: "Thu", es: "Jue" },
+      blocks: [
+        { start: "07:15", end: "07:45", where: "hotel", ride: "own",
+          title: { en: "Check out and head to the nursery", es: "Salida del hotel y camino al vivero" },
+          details: { en: "Check out of the hotel and make your own way to Overdevest.", es: "Deje el hotel y llegue por su cuenta a Overdevest." } },
+        { start: "07:45", end: "08:00", where: "",
+          title: { en: "Arrive at Overdevest", es: "Llegada a Overdevest" } },
+        { start: "08:00", end: "09:30", where: "barn",
+          title: { en: "Working group share-out", es: "Presentación de los grupos de trabajo" },
+          details: { en: "Each group leader shares what the group did and learned, with time for questions.", es: "Cada líder comparte lo que hizo y aprendió su grupo, con tiempo para preguntas." } },
+        { start: "09:30", end: "09:45", where: "",
+          title: { en: "Break", es: "Descanso" } },
+        { start: "09:45", end: "12:00", where: "barn",
+          title: { en: "Grower Innovation Showcase", es: "Muestra de innovación de productores" },
+          details: { en: "Each of the six visiting nurseries shares something new they did this year.", es: "Cada uno de los seis viveros visitantes comparte algo nuevo que hizo este año." } },
+        { start: "12:00", end: "12:30", where: "",
+          title: { en: "Grab-and-go lunch and departures", es: "Almuerzo para llevar y salidas" },
+          details: { en: "Safe travels home!", es: "¡Buen viaje de regreso!" } },
+      ],
+    },
+  ],
+
+  // ---- WORKING GROUPS (Wednesday) ----------------------------------------
+  // Rooms are place ids. Themes come from the agendas the leaders were sent;
+  // blank a theme ("") if a leader changes it and you do not want to guess.
+  groups: [
+    { name: { en: "Grower (Perennials + Woodies)", es: "Productores (perennes + leñosas)" }, s1: "barn", s2: "barn",
+      t1: { en: "Growing the crop: PGRs, timing and problem plants (PGR talk together with Plant Health)", es: "Producir el cultivo: PGR, tiempos y plantas problema (charla de PGR junto con Sanidad Vegetal)" },
+      t2: { en: "Water, nutrition and weather", es: "Agua, nutrición y clima" } },
+    { name: { en: "Plant Health", es: "Sanidad Vegetal" }, s1: "barn", s2: "barn",
+      t1: { en: "Chemicals: what’s working (PGR talk together with Grower)", es: "Químicos: qué funciona (charla de PGR junto con Productores)" },
+      t2: { en: "From forecast to sprayer: planning and logistics", es: "Del pronóstico a la aspersora: planificación y logística" } },
+    { name: { en: "Propagation", es: "Propagación" }, s1: "headhouse", s2: "headhouse",
+      t1: { en: "From cutting to rooted liner", es: "Del esqueje a la planta enraizada" },
+      t2: { en: "Timing and troubleshooting problem crops", es: "Tiempos y cultivos problema" } },
+    { name: { en: "Shipping", es: "Envíos" }, s1: "dock", s2: "dock",
+      t1: { en: "On the dock: process and productivity", es: "En el muelle: proceso y productividad" },
+      t2: { en: "Out the door: freight, loads and routes", es: "La salida: fletes, cargas y rutas" } },
+    { name: { en: "Lean Management", es: "Gestión Lean" }, s1: "dock", s2: "dock",
+      note: { en: "separate area near Shipping", es: "área aparte cerca de Envíos" },
+      t1: { en: "Gemba walk on the dock", es: "Recorrido gemba en el muelle" },
+      t2: { en: "People, suppliers, and one problem solved", es: "Personas, proveedores y un problema resuelto" } },
+    { name: { en: "Trialing", es: "Pruebas de plantas" }, s1: "trial", s2: "trial",
+      t1: { en: "In the garden: what’s performing", es: "En el jardín: qué está funcionando" },
+      t2: { en: "Running a trial program", es: "Cómo llevar un programa de pruebas" } },
+    { name: { en: "Marketing", es: "Mercadeo" }, s1: "conference", s2: "conference",
+      t1: { en: "Off-season engagement", es: "Participación fuera de temporada" },
+      t2: { en: "Sales support and the tools behind it", es: "Apoyo a ventas y sus herramientas" } },
+  ],
+
+  // ---- GOOD TO KNOW -------------------------------------------------------
+  // Lead each line with an emoji. Public page — nothing private here.
+  goodToKnow: [
+    { en: "🚌 Look for the ride labels: “Ride provided” means we drive you; “On your own” means you get yourself there.",
+      es: "🚌 Fíjese en las etiquetas de transporte: “Transporte incluido” significa que nosotros lo llevamos; “Por su cuenta” significa que usted llega por sí mismo." },
+    { en: "🥾 You will be walking around a working nursery — wear comfortable, closed-toe shoes.",
+      es: "🥾 Caminará por un vivero en funcionamiento — use zapatos cómodos y cerrados." },
+  ],
+
+  // Links to the event's phone tools, shown at the foot.
+  links: [
+    { url: "https://whatworks.pages.dev/", name: { en: "What Works", es: "Lo Que Funciona" },
+      sub: { en: "Plant Health: rate pest products, tank mixes and PGR crop cards", es: "Sanidad Vegetal: califique productos, mezclas de tanque y fichas de PGR" } },
+  ],
+
+  // ---- MAP ----------------------------------------------------------------
+  // Off until the layout is drawn. Turning it on shows the drawing in
+  // siteMapSVG() at the bottom of this file with the numbered places above.
+  showMap: false,
+};
+
+/* ====================== END OF THE EDITABLE BLOCK ========================= */
+</script>
+
+<style>
+  /* Nursery greens, dark enough to read on a phone held OUTDOORS (the lesson
+     from the open-house page: passing AA was not enough there). Body copy is
+     11:1+ on white; the brand green 7.3:1; the amber is for fills only. */
+  :root{
+    --wash:#f3f6f1;
+    --wash-deep:#e2eadf;
+    --ink:#1c2b21;
+    --g:#2f6b3a;          /* brand green — text-safe (7.3:1 on white) */
+    --g-deep:#244f2c;
+    --g-soft:#d8ead9;
+    --line:#dde5da;
+    --slate:#4a5a4f;      /* secondary text, 7.6:1 on white */
+    --amber:#f2b33d;      /* "now" fills and the provided-ride badge */
+    --amber-soft:#fdf0d5;
+    --own:#e9eef0;
+    --flag:#d9480f;       /* ADD chips — edit mode only */
+    --card:#fff;
+    --shadow:0 1px 0 rgba(28,43,33,.05), 0 6px 18px -10px rgba(28,43,33,.35);
+    --display:"Avenir Next Condensed","Roboto Condensed","Arial Narrow","Helvetica Neue",Helvetica,sans-serif;
+    --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono","Roboto Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-padding-top:64px}
+  body{margin:0;background:var(--wash);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+       padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .wrap{max-width:680px;margin:0 auto;padding-left:18px;padding-right:18px}
+
+  /* header */
+  .masthead{background:var(--ink);color:var(--wash);padding-top:16px;padding-bottom:16px;border-bottom:4px solid var(--amber)}
+  .masthead .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .masthead .org{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin:0 0 6px}
+  .masthead h1{font-family:var(--display);font-size:clamp(34px,10vw,48px);line-height:.95;letter-spacing:.02em;text-transform:uppercase;margin:0;font-weight:700}
+  .masthead .when{font-family:var(--mono);font-size:13px;color:rgba(243,246,241,.85);margin:8px 0 0}
+  .lang{background:transparent;color:var(--wash);border:1.5px solid rgba(243,246,241,.6);border-radius:99px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;flex:none}
+
+  /* day chips (jump, not tabs — every day stays on the page) */
+  .days{position:sticky;top:0;z-index:15;background:var(--wash);border-bottom:1px solid var(--line)}
+  .days .wrap{display:flex;gap:8px;padding-top:10px;padding-bottom:10px;overflow-x:auto}
+  .days a{flex:1 1 0;text-align:center;text-decoration:none;color:var(--g-deep);background:var(--card);border:1.5px solid var(--g-soft);
+          border-radius:99px;padding:8px 10px;font-weight:600;font-size:15px;white-space:nowrap}
+  .days a.today{background:var(--g);border-color:var(--g);color:#fff}
+
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--slate);margin:0 0 10px}
+
+  /* right now */
+  .now-section{padding-top:20px;padding-bottom:4px}
+  .now-card{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--amber);border-radius:6px;padding:16px;box-shadow:var(--shadow)}
+  .now-card.idle{border-left-color:var(--slate)}
+  .now-time{font-family:var(--mono);font-size:13px;color:var(--g-deep);margin:0 0 2px}
+  .now-title{font-family:var(--display);text-transform:uppercase;font-size:clamp(24px,7vw,32px);line-height:1.02;margin:0;font-weight:700}
+  .now-where{margin:8px 0 0;font-size:15px;color:var(--slate)}
+  .meter{height:8px;background:var(--wash-deep);border-radius:99px;overflow:hidden;margin:14px 0 6px}
+  .meter span{display:block;height:100%;background:var(--amber);border-radius:99px;transition:width .6s linear}
+  .meter-label{font-family:var(--mono);font-size:12px;color:var(--slate);margin:0}
+  .up-next{margin:10px 0 0;font-size:14.5px;color:var(--slate)}
+  .up-next b{color:var(--ink)}
+
+  /* schedule */
+  .day{padding-top:26px}
+  .day h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;font-size:24px;margin:0 0 12px;color:var(--g-deep)}
+  .rail{position:relative;padding-left:30px}
+  .rail::before{content:"";position:absolute;left:10px;top:6px;bottom:6px;width:2px;background:var(--line)}
+  .block{position:relative;margin:0 0 12px}
+  .block::before{content:"";position:absolute;left:-25px;top:19px;width:11px;height:11px;border-radius:2px;background:var(--wash);
+                 border:2px solid var(--g-soft);transform:rotate(45deg)}
+  .block.is-done::before{background:var(--g-soft)}
+  .block.is-now::before{background:var(--amber);border-color:var(--amber);box-shadow:0 0 0 5px rgba(242,179,61,.3)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:13px 14px;box-shadow:var(--shadow)}
+  .block.is-now .card{border-left:5px solid var(--amber);padding-left:10px}
+  .block.is-done .card{opacity:.6;box-shadow:none}
+  /* the time is the loudest small thing on the card (open-house lesson) */
+  .b-time{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--g);display:block;margin-bottom:4px}
+  .b-time .dur{font-weight:400;font-size:13px;color:var(--slate)}
+  .b-title{font-family:var(--display);text-transform:uppercase;font-size:21px;line-height:1.08;font-weight:700;display:block}
+  .b-where{display:block;margin-top:5px;font-size:14.5px;color:var(--slate)}
+  .b-where a{color:var(--g);font-weight:600}
+  .card p{margin:8px 0 0;font-size:15.5px;line-height:1.45;color:var(--g-deep)}
+  .badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;border-radius:3px;vertical-align:3px;margin-left:8px}
+  .badge.now{background:var(--amber);color:var(--ink)}
+  .badge.next{background:var(--g);color:#fff}
+  .ride{display:inline-flex;align-items:center;gap:6px;margin-top:9px;font-size:13.5px;font-weight:700;border-radius:99px;padding:4px 11px}
+  .ride.provided{background:var(--amber-soft);color:#6b4404;border:1px solid #f1d59b}
+  .ride.own{background:var(--own);color:#334148;border:1px solid #d3dde1}
+  .stops{list-style:none;margin:10px 0 0;padding:0 0 0 14px;border-left:2px solid var(--g-soft)}
+  .stops li{padding:8px 0 0}
+  .stops li:first-child{padding-top:0}
+  .stops b{display:block;font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;font-size:16px;color:var(--g)}
+  .stops p{margin:2px 0 0}
+  .go{display:inline-block;margin-top:10px;font-size:14px;font-weight:600;color:var(--g);text-decoration:none;border:1.5px solid var(--g-soft);border-radius:6px;padding:7px 11px}
+  .go:active{background:var(--g-soft)}
+
+  /* working groups */
+  .groups{padding-top:30px}
+  .groups h2,.map-section h2,.info h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;font-size:24px;margin:0 0 6px;color:var(--g-deep)}
+  .groups .sub{margin:0 0 12px;color:var(--slate);font-size:15px}
+  .grp{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--shadow)}
+  .grp h3{margin:0 0 6px;font-size:17px}
+  .grp .row{display:grid;grid-template-columns:88px 1fr;gap:2px 10px;font-size:15px;margin-top:6px}
+  .grp .lbl{font-family:var(--mono);font-size:12px;color:var(--slate);padding-top:2px}
+  .grp .room{font-weight:700;color:var(--g-deep)}
+  .grp .room a{color:inherit}
+  .grp .theme{color:var(--slate);font-size:14.5px}
+
+  /* map */
+  .map-section{padding-top:30px}
+  .map-frame{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:var(--shadow)}
+  .map-frame svg{width:100%;height:auto;display:block}
+  .legend{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:15px}
+  .legend li{display:flex;gap:8px;align-items:center;scroll-margin-top:80px}
+  .legend .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--g);color:#fff;font-weight:700;font-size:13px;display:grid;place-items:center}
+  .legend li:target{background:var(--amber-soft);border-radius:6px}
+
+  /* good to know */
+  .info{padding-top:30px;padding-bottom:20px}
+  .info ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+  .info li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15.5px;line-height:1.45;color:var(--g-deep);
+           box-shadow:var(--shadow);display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+  .info li .emoji{font-size:21px;line-height:1.2}
+  .calls{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .calls a{flex:1 1 46%;text-align:center;text-decoration:none;background:var(--g);color:#fff;font-family:var(--display);text-transform:uppercase;
+           letter-spacing:.05em;font-size:17px;padding:13px 10px;border-radius:6px}
+  .links{padding-bottom:40px}
+  .links a{display:block;text-decoration:none;color:var(--ink);background:var(--card);border:1.5px solid var(--g-soft);border-radius:12px;
+           padding:13px 15px;box-shadow:var(--shadow);margin-top:10px}
+  .links b{display:block;font-family:var(--display);font-size:19px;letter-spacing:.3px;color:var(--g-deep)}
+  .links span{display:block;color:var(--slate);font-size:14px;margin-top:2px}
+
+  /* jump bar */
+  .jumpbar{position:fixed;left:0;right:0;bottom:0;background:var(--ink);padding:11px 18px calc(11px + env(safe-area-inset-bottom));
+           display:flex;align-items:center;gap:12px;z-index:20}
+  .jumpbar .status{flex:1;min-width:0;font-family:var(--mono);font-size:12px;color:rgba(243,246,241,.88);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .jumpbar .status b{color:var(--amber)}
+  .jumpbar button{background:var(--amber);color:var(--ink);border:0;border-radius:6px;font-family:var(--display);text-transform:uppercase;letter-spacing:.05em;
+                  font-size:15px;font-weight:700;padding:10px 15px;cursor:pointer;flex:none}
+
+  /* edit mode */
+  .todo{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:var(--flag);color:#fff;padding:3px 7px;border-radius:3px}
+  .editnote{background:var(--flag);color:#fff;font-family:var(--mono);font-size:12.5px;padding:10px 18px;line-height:1.4}
+
+  @media (max-width:430px){
+    .rail{padding-left:24px}
+    .rail::before{left:7px}
+    .block::before{left:-21px;width:10px;height:10px}
+    .grp .row{grid-template-columns:78px 1fr}
+    .legend{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+  @media print{
+    .jumpbar,.now-section,.editnote,.days,.lang{display:none}
+    body{background:#fff;padding:0;font-size:11pt}
+    .card,.grp,.info li{box-shadow:none}
+    .block,.grp{break-inside:avoid}
+    .masthead{background:#fff;color:#000;border-bottom:2px solid #000}
+    .masthead h1,.masthead .org,.masthead .when{color:#000}
+  }
+</style>
+</head>
+<body>
+
+<div id="editnote"></div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <p class="org" id="org"></p>
+        <h1 id="event-name">SynRG '26</h1>
+        <p class="when" id="when"></p>
+      </div>
+      <button class="lang" type="button" id="lang-btn">Español</button>
+    </div>
+  </div>
+</header>
+
+<nav class="days" aria-label="Days"><div class="wrap" id="day-chips"></div></nav>
+
+<main>
+  <section class="now-section wrap">
+    <p class="eyebrow" id="lbl-now">Right now</p>
+    <div class="now-card" id="now-card"></div>
+  </section>
+
+  <div id="days"></div>
+
+  <section class="groups wrap" id="groups">
+    <h2 id="lbl-groups">Working groups</h2>
+    <p class="sub" id="lbl-groups-sub"></p>
+    <div id="group-list"></div>
+  </section>
+
+  <section class="map-section wrap" id="map-section" hidden>
+    <h2 id="lbl-map">Map of Overdevest</h2>
+    <div class="map-frame" id="map-frame"></div>
+    <ul class="legend" id="legend"></ul>
+  </section>
+
+  <section class="info wrap">
+    <h2 id="lbl-info">Good to know</h2>
+    <ul id="info-list"></ul>
+    <div class="calls" id="calls"></div>
+  </section>
+
+  <section class="links wrap" id="links"></section>
+</main>
+
+<div class="jumpbar">
+  <div class="status" id="jump-status"></div>
+  <button type="button" id="jump-btn">Jump to now</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const C = CONFIG;
+  const $ = (s,r) => (r||document).querySelector(s);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  /* ---------- language ---------- */
+  const UI = {
+    en: { lang: "Español", now: "Right now", jump: "Jump to now", groups: "Working groups",
+          groupsSub: "Wednesday, October 7 · Session 1 8:00–9:30 · Session 2 10:30–12:00",
+          s1: "Session 1", s2: "Session 2", both: "Both sessions", map: "Map of Overdevest", info: "Good to know",
+          provided: "🚌 Ride provided", own: "🚗 On your own", web: "Website", onMap: "On the map", seeGroups: "See the working groups",
+          before: "Starts", notStarted: "Not started yet", firstUp: "First up", wrap: "That’s a wrap", thanks: "Thanks for coming — safe travels!",
+          between: "Between sessions", free: "Free time", next: "Next", left: "left", nowB: "Now", nextB: "Next", call: "Call",
+          add: "Add", hr: "hr", min: "min", overnight: "See you tomorrow", tomorrow: "Tomorrow" },
+    es: { lang: "English", now: "Ahora", jump: "Ir a ahora", groups: "Grupos de trabajo",
+          groupsSub: "Miércoles 7 de octubre · Sesión 1 8:00–9:30 · Sesión 2 10:30–12:00",
+          s1: "Sesión 1", s2: "Sesión 2", both: "Ambas sesiones", map: "Mapa de Overdevest", info: "Bueno saber",
+          provided: "🚌 Transporte incluido", own: "🚗 Por su cuenta", web: "Sitio web", onMap: "En el mapa", seeGroups: "Ver los grupos de trabajo",
+          before: "Empieza", notStarted: "Todavía no empieza", firstUp: "Primero", wrap: "¡Eso es todo!", thanks: "Gracias por venir — ¡buen viaje!",
+          between: "Entre sesiones", free: "Tiempo libre", next: "Siguiente", left: "restantes", nowB: "Ahora", nextB: "Sigue", call: "Llamar",
+          add: "Falta", hr: "h", min: "min", overnight: "Hasta mañana", tomorrow: "Mañana" },
+  };
+  const KEY = "synrg26.lang";
+  let lang = "en";
+  try { const s = localStorage.getItem(KEY); lang = s === "es" || s === "en" ? s : ((navigator.language || "").toLowerCase().startsWith("es") ? "es" : "en"); } catch (e) {}
+  const u = k => UI[lang][k];
+  const L = v => v == null ? "" : (typeof v === "string" ? v : (v[lang] || v.en || ""));
+
+  /* a blank field: loud in edit mode, invisible live */
+  const fill = (v, hint) => { const s = L(v); return s ? esc(s) : (EDIT_MODE ? '<span class="todo">' + esc(u("add")) + ' ' + esc(hint) + '</span>' : ""); };
+
+  /* ---------- time ---------- */
+  const at = (date, hhmm) => { const [Y,M,D] = date.split("-").map(Number); const [h,m] = hhmm.split(":").map(Number); return new Date(Y, M-1, D, h, m); };
+  const fmt = d => { let h = d.getHours(), m = d.getMinutes(); if (lang === "es") return h + ":" + String(m).padStart(2,"0");
+                     const ap = h >= 12 ? "pm" : "am"; h = h % 12 || 12; return h + (m ? ":" + String(m).padStart(2,"0") : "") + ap; };
+  const mins = ms => Math.max(0, Math.round(ms / 60000));
+  const dur = n => n >= 60 ? Math.floor(n/60) + " " + u("hr") + (n % 60 ? " " + (n % 60) + " " + u("min") : "") : n + " " + u("min");
+  const all = [];
+  C.days.forEach((d, di) => d.blocks.forEach((b, bi) => all.push(Object.assign({}, b, { di, id: "b-" + di + "-" + bi, startAt: at(d.date, b.start), endAt: at(d.date, b.end) }))));
+  const range = b => fmt(b.startAt) + "–" + fmt(b.endAt);
+
+  function state(now){
+    let current = null, next = null;
+    for (const b of all){ if (now >= b.startAt && now < b.endAt) current = b; if (!next && now < b.startAt) next = b; }
+    const first = all[0], last = all[all.length - 1];
+    const phase = now < first.startAt ? "before" : now >= last.endAt ? "after" : "during";
+    return { current, next, phase, first, last };
+  }
+  // the phone's own calendar date, not UTC (7pm in New Jersey is already tomorrow in UTC)
+  const todayIndex = now => { const local = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,10); return C.days.findIndex(d => d.date === local); };
+
+  /* ---------- where ---------- */
+  function whereHtml(id){
+    if (!id) return "";
+    const p = C.places[id]; if (!p) return esc(id);
+    const name = esc(L(p.name));
+    if (!p.onSite){
+      if (p.url) return '📍 <a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + name + '</a>';
+      return '📍 ' + name;
+    }
+    return '📍 ' + (C.showMap ? '<a href="#place-' + id + '">' + name + '</a>' : name);
+  }
+
+  /* ---------- render everything (again on a language switch) ---------- */
+  function render(){
+    document.documentElement.lang = lang;
+    $("#lang-btn").textContent = u("lang");
+    $("#event-name").textContent = C.eventName;
+    $("#org").textContent = L(C.orgName);
+    $("#when").textContent = L(C.dateLabel);
+    $("#lbl-now").textContent = u("now");
+    $("#jump-btn").textContent = u("jump");
+    $("#lbl-groups").textContent = u("groups");
+    $("#lbl-groups-sub").textContent = u("groupsSub");
+    $("#lbl-map").textContent = u("map");
+    $("#lbl-info").textContent = u("info");
+
+    const ti = todayIndex(new Date());
+    $("#day-chips").innerHTML = C.days.map((d, i) => '<a href="#day-' + i + '" class="' + (i === ti ? "today" : "") + '">' + esc(L(d.short)) + ' ' + d.date.slice(8).replace(/^0/,"") + '</a>').join("");
+
+    $("#days").innerHTML = C.days.map((d, di) => {
+      const blocks = all.filter(b => b.di === di).map(b => {
+        let h = '<div class="block" id="' + b.id + '"><div class="card">';
+        h += '<span class="b-time">' + esc(range(b)) + ' <span class="dur">· ' + esc(dur(mins(b.endAt - b.startAt))) + '</span></span>';
+        h += '<span class="b-title">' + esc(L(b.title)) + '<span class="badge" hidden></span></span>';
+        const w = b.where ? whereHtml(b.where) : (b.groups || b.stops ? "" : fill("", lang === "es" ? "lugar" : "location"));
+        if (w) h += '<span class="b-where">' + w + '</span>';
+        if (b.ride) h += '<span class="ride ' + b.ride + '">' + esc(u(b.ride)) + '</span>';
+        if (b.details) h += '<p>' + esc(L(b.details)) + '</p>';
+        if (b.stops) h += '<ul class="stops">' + b.stops.map(s => '<li><b>' + esc(L(s.name)) + '</b>' + (s.details ? '<p>' + esc(L(s.details)) + '</p>' : '') + '</li>').join("") + '</ul>';
+        if (b.groups) h += '<a class="go" href="#groups">' + esc(u("seeGroups")) + ' ↓</a>';
+        return h + '</div></div>';
+      }).join("");
+      return '<section class="day wrap" id="day-' + di + '"><h2>' + esc(L(d.label)) + '</h2><div class="rail">' + blocks + '</div></section>';
+    }).join("");
+
+    $("#group-list").innerHTML = C.groups.map(g => {
+      const room = id => { const p = C.places[id]; const n = esc(L(p && p.name)); return C.showMap ? '<a href="#place-' + id + '">' + n + '</a>' : n; };
+      const same = g.s1 === g.s2;
+      let h = '<div class="grp"><h3>' + esc(L(g.name)) + '</h3>';
+      h += '<div class="row"><span class="lbl">' + esc(same ? u("both") : u("s1")) + '</span><span class="room">📍 ' + room(g.s1) + (g.note ? ' <span class="theme">(' + esc(L(g.note)) + ')</span>' : '') + '</span></div>';
+      if (!same) h += '<div class="row"><span class="lbl">' + esc(u("s2")) + '</span><span class="room">📍 ' + room(g.s2) + '</span></div>';
+      if (L(g.t1)) h += '<div class="row"><span class="lbl">' + esc(u("s1")) + '</span><span class="theme">' + esc(L(g.t1)) + '</span></div>';
+      if (L(g.t2)) h += '<div class="row"><span class="lbl">' + esc(u("s2")) + '</span><span class="theme">' + esc(L(g.t2)) + '</span></div>';
+      return h + '</div>';
+    }).join("");
+
+    if (C.showMap){
+      $("#map-section").hidden = false;
+      $("#map-frame").innerHTML = siteMapSVG();
+      $("#legend").innerHTML = Object.entries(C.places).filter(([, p]) => p.onSite).sort((a, b) => a[1].n - b[1].n)
+        .map(([id, p]) => '<li id="place-' + id + '"><span class="num">' + p.n + '</span>' + esc(L(p.name)) + '</li>').join("");
+    }
+
+    $("#info-list").innerHTML = (C.goodToKnow || []).map(t => {
+      const s = L(t); const m = s.match(/^(\p{Extended_Pictographic}️?)\s*(.*)$/u);
+      return '<li><span class="emoji">' + esc(m ? m[1] : "•") + '</span><span>' + esc(m ? m[2] : s) + '</span></li>';
+    }).join("");
+    $("#calls").innerHTML = C.contactPhone
+      ? '<a href="tel:' + esc(C.contactPhone.replace(/[^0-9+]/g, "")) + '">' + esc(u("call") + " " + (C.contactName || "")) + '</a>'
+      : (EDIT_MODE ? fill("", lang === "es" ? "a quién llamar" : "who to call") : "");
+    $("#links").innerHTML = (C.links || []).map(l => '<a href="' + esc(l.url) + '" target="_blank" rel="noopener"><b>' + esc(L(l.name)) + ' →</b><span>' + esc(L(l.sub)) + '</span></a>').join("");
+
+    if (EDIT_MODE) $("#editnote").innerHTML = '<div class="editnote">EDIT MODE — orange chips mark what still needs filling in (the CONFIG block at the top of index.html). Set EDIT_MODE to false before the QR code goes up.</div>';
+    tick();
+  }
+
+  /* ---------- live ---------- */
+  function tick(){
+    const now = new Date(), s = state(now), card = $("#now-card");
+    if (s.phase === "before"){
+      card.className = "now-card idle";
+      card.innerHTML = '<p class="now-time">' + esc(u("before") + " " + L(C.days[0].label) + " · " + fmt(s.first.startAt)) + '</p>' +
+        '<h2 class="now-title">' + esc(u("notStarted")) + '</h2><p class="up-next">' + esc(u("firstUp")) + ': <b>' + esc(L(s.first.title)) + '</b></p>';
+    } else if (s.phase === "after"){
+      card.className = "now-card idle";
+      card.innerHTML = '<h2 class="now-title">' + esc(u("wrap")) + '</h2><p class="up-next">' + esc(u("thanks")) + '</p>';
+    } else if (s.current){
+      const c = s.current, pct = Math.min(100, Math.max(0, (now - c.startAt) / (c.endAt - c.startAt) * 100));
+      card.className = "now-card";
+      card.innerHTML = '<p class="now-time">' + esc(range(c)) + '</p><h2 class="now-title">' + esc(L(c.title)) + '</h2>' +
+        (c.where ? '<p class="now-where">' + whereHtml(c.where) + '</p>' : '') +
+        (c.ride ? '<span class="ride ' + c.ride + '">' + esc(u(c.ride)) + '</span>' : '') +
+        '<div class="meter"><span style="width:' + pct.toFixed(1) + '%"></span></div><p class="meter-label">' + esc(dur(mins(c.endAt - now)) + " " + u("left")) + '</p>' +
+        (s.next ? '<p class="up-next">' + esc(u("next")) + ' ' + esc(nextWhen(s.next, now)) + ': <b>' + esc(L(s.next.title)) + '</b></p>' : '');
+    } else {
+      // between two days = overnight; between two blocks of one day = free time
+      const prev = all.filter(b => b.endAt <= now).pop();
+      const overnight = !!(s.next && prev && prev.di !== s.next.di);
+      card.className = "now-card idle";
+      card.innerHTML = '<p class="now-time">' + esc(overnight ? u("overnight") : u("between")) + '</p><h2 class="now-title">' + esc(u("free")) + '</h2>' +
+        (s.next ? '<p class="up-next">' + esc(u("next")) + ' ' + esc(nextWhen(s.next, now)) + ': <b>' + esc(L(s.next.title)) + '</b></p>' : '');
+    }
+    for (const b of all){
+      const node = document.getElementById(b.id); if (!node) continue;
+      const badge = node.querySelector(".badge");
+      node.classList.toggle("is-now", s.current === b);
+      node.classList.toggle("is-done", now >= b.endAt);
+      badge.hidden = true; badge.className = "badge";
+      if (s.current === b){ badge.hidden = false; badge.classList.add("now"); badge.textContent = u("nowB"); }
+      else if (s.next === b && s.phase !== "after"){ badge.hidden = false; badge.classList.add("next"); badge.textContent = u("nextB"); }
+    }
+    const st = $("#jump-status");
+    if (s.current) st.innerHTML = esc(u("nowB")) + ": <b>" + esc(L(s.current.title)) + "</b>";
+    else if (s.next) st.innerHTML = esc(u("next")) + ": <b>" + esc(L(s.next.title)) + "</b> · " + esc(nextWhen(s.next, now));
+    else st.textContent = L(C.dateLabel);
+  }
+  // "at 2:00pm" today, "Wed 7:15am" on another day
+  function nextWhen(b, now){
+    const sameDay = b.startAt.toDateString() === now.toDateString();
+    return (sameDay ? "" : L(C.days[b.di].short) + " ") + fmt(b.startAt);
+  }
+
+  $("#lang-btn").addEventListener("click", () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem(KEY, lang); } catch (e) {} render(); });
+  $("#jump-btn").addEventListener("click", () => {
+    const s = state(new Date()); const target = s.current || s.next || all[all.length - 1];
+    document.getElementById(target.id).scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  render();
+  setInterval(tick, 30000);
+
+  /* Works offline once opened (barns and fields have weak signal). */
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+})();
+
+/* --------------------------------------------------------------------------
+   The Overdevest map — to be drawn from Caryn's layout (a simple schematic:
+   labelled buildings, roads, parking, with the numbered places from CONFIG).
+   Only used when CONFIG.showMap is true.
+   -------------------------------------------------------------------------- */
+function siteMapSVG(){ return `
+<svg viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of Overdevest Nurseries — not yet drawn">
+  <rect x="1" y="1" width="598" height="418" rx="6" fill="#f7faf5" stroke="#c9d6c4" stroke-width="2" stroke-dasharray="8 6"/>
+</svg>`; }
+</script>
+</body>
+</html>
