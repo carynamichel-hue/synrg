@@ -218,13 +218,15 @@ const CONFIG = {
     // where each name sits, if placed on trace.html ("Place the names"); a spot
     // missing here uses its labelAt / the middle of its outline
     labels: {
-      barn: [39.433964,-75.312341],
-      checkin: [39.433873,-75.311311],
-      trial: [39.433543,-75.311041],
-      headhouse: [39.432735,-75.312787],
+      barn: [39.434138,-75.313168],
+      checkin: [39.43437,-75.312309],
+      trial: [39.43292,-75.311075],
+      headhouse: [39.432725,-75.312679],
       greenhouse1: [39.432369,-75.31298],
       dock: [39.432031,-75.311499],
-      parking: [39.433541,-75.311902],
+      conference: [39.433152,-75.311108],
+      parking: [39.433641,-75.311628],
+      entrance: [39.435588,-75.308501],
     },
   },
   // On the map but not schedule places: shown on the picture and in the legend.
@@ -684,6 +686,30 @@ function inkOn(c){ const n = parseInt(c.slice(1), 16), r = n >> 16, g = (n >> 8)
 // Where Caryn placed a name on trace.html (map.labels), if she did: it wins
 // over labelAt / labelDir.
 function labelSpot(area){ const L = CONFIG.map.labels; return L && L[area] ? L[area] : null; }
+// leader lines: a name placed off its spot is joined to it by a thin line.
+// Flat maths is fine at this scale (a few hundred metres); lng is scaled by
+// cos(lat) so distances come out the same both ways.
+function _k(){ return Math.cos(39.4337 * Math.PI / 180); }
+function _inside(p, poly){ let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const a = poly[i], b = poly[j]; if ((a[0] > p[0]) !== (b[0] > p[0]) && p[1] < (b[1] - a[1]) * (p[0] - a[0]) / (b[0] - a[0]) + a[1]) c = !c; } return c; }
+function _nearestEdge(p, poly){
+  const k = _k(); let best = null, bd = Infinity;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    const ax = a[1] * k, ay = a[0], bx = b[1] * k, by = b[0], px = p[1] * k, py = p[0];
+    const dx = bx - ax, dy = by - ay, t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy || 1)));
+    const qx = ax + t * dx, qy = ay + t * dy, d = (px - qx) ** 2 + (py - qy) ** 2;
+    if (d < bd) { bd = d; best = [qy, qx / k]; }
+  }
+  return best;
+}
+// where a name's line ends: its dot, or the nearest edge of its outline when
+// the name sits outside it; null = no line (the name is on its spot)
+function _leaderEnd(at, anchor, poly){
+  const m = (a, b) => Math.hypot((a[0] - b[0]) * 111320, (a[1] - b[1]) * 111320 * _k());
+  if (anchor) return m(at, anchor) > 6 ? anchor : null;
+  if (poly && !_inside(at, poly)) { const e = _nearestEdge(at, poly); return m(at, e) > 3 ? e : null; }
+  return null;
+}
 function _mid(pts){ const n = pts.length; return [pts.reduce((a, p) => a + p[0], 0) / n, pts.reduce((a, p) => a + p[1], 0) / n]; }
 function drawMap(){
   if (_map || typeof L === "undefined") { if (typeof L === "undefined") document.getElementById("sitemap").textContent = "Map unavailable offline."; return; }
@@ -703,7 +729,7 @@ function drawMap(){
     _shapes[key] = L.circleMarker(pt, { radius: 8, color: inkOn(color) === "#fff" ? "#fff" : "#1c2b21", weight: 3, fillColor: color, fillOpacity: 1, interactive: false }).addTo(_map);
     return pt;
   };
-  const dotLabel = (key, at, x) => ({ at: labelSpot(key) || x.labelAt || at, text: x.map || x.label || x.name, color: x.color, dir: labelSpot(key) || x.labelAt ? null : (x.labelDir || "top"), dot: true });
+  const dotLabel = (key, at, x) => ({ at: labelSpot(key) || x.labelAt || at, text: x.map || x.label || x.name, color: x.color, dir: labelSpot(key) || x.labelAt ? null : (x.labelDir || "top"), dot: true, anchor: at });
   const outline = (key, color) => {
     const pts = M.areas[key]; if (!pts) return null;
     all.push(...pts);
@@ -714,12 +740,19 @@ function drawMap(){
     if (x.markers) { (M[x.markers] || []).forEach(p => { all.push(p); badge(p, x.sym, x.color, "wc"); }); continue; }
     if (x.dot) { const pt = dot(x.dot, x.color, x.far); if (pt && (x.map || x.label)) _labels.push(dotLabel(x.dot, pt, x)); continue; }
     const pts = outline(x.area, x.color);
-    if (pts && (x.map || x.label)) _labels.push({ at: labelSpot(x.area) || x.labelAt || _mid(pts), text: x.map || x.label, color: x.color, dir: labelSpot(x.area) ? null : x.labelDir });
+    if (pts && (x.map || x.label)) _labels.push({ at: labelSpot(x.area) || x.labelAt || _mid(pts), text: x.map || x.label, color: x.color, dir: labelSpot(x.area) ? null : x.labelDir, poly: pts });
   }
   for (const p of Object.values(C.places)) {
     if (p.onSite && p.dot) { const pt = dot(p.dot, p.color); if (pt) _labels.push(dotLabel(p.dot, pt, p)); continue; }
     if (!p.onSite || !p.area) continue;
-    const pts = outline(p.area, p.color); if (pts) _labels.push({ at: labelSpot(p.area) || p.labelAt || _mid(pts), text: p.map || p.name, color: p.color, dir: labelSpot(p.area) ? null : p.labelDir });
+    const pts = outline(p.area, p.color); if (pts) _labels.push({ at: labelSpot(p.area) || p.labelAt || _mid(pts), text: p.map || p.name, color: p.color, dir: labelSpot(p.area) ? null : p.labelDir, poly: pts });
+  }
+  // leader lines sit under the outlines' dots and the names (own pane, below overlays)
+  _map.createPane("leaders").style.zIndex = 390;
+  for (const l of _labels) {
+    const end = l.dir ? null : _leaderEnd(l.at, l.anchor, l.poly); if (!end) continue;
+    L.polyline([l.at, end], { pane: "leaders", color: "#14201a", weight: 5, opacity: .55, interactive: false }).addTo(_map);
+    L.polyline([l.at, end], { pane: "leaders", color: l.color, weight: 2.5, opacity: 1, interactive: false, className: "leader" }).addTo(_map);
   }
   _eventBounds = L.latLngBounds(all);
   if (M.view && M.view.bounds) _map.fitBounds(M.view.bounds); else if (all.length) _map.fitBounds(all, { padding: [14, 14] });

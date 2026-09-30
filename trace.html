@@ -66,7 +66,7 @@
 
     <div class="sec">
       <h2>Place the names</h2>
-      <p class="how" style="margin:0 0 8px">Shows each name where it sits on the schedule map now, at the size a phone shows them. Drag a name to where you want it — it can sit on its outline or beside it. A name with a <b style="color:#e03131">red ring</b> touches another one.</p>
+      <p class="how" style="margin:0 0 8px">Shows each name where it sits on the schedule map now, at the size a phone shows them. Drag a name to where you want it. Off its spot, it gets a line back to it — so a crowded name can sit out in open space. A name with a <b style="color:#e03131">red ring</b> touches another one.</p>
       <div class="row"><button class="btn ghost" id="names-btn" type="button">Place the names</button><button class="btn ghost" id="names-reset" type="button" style="font-size:12px">Put them back</button></div>
       <p class="msg" id="names-msg"></p>
     </div>
@@ -221,7 +221,7 @@
      Every name the schedule map shows, starting where it sits there now:
      read from the live schedule page's CONFIG (so this page never drifts
      from it), then S.labels wins once a name has been dragged. */
-  let CFG = null, nameMarkers = [];
+  let CFG = null, nameMarkers = [], leaderLines = [];
   fetch("index.html", { cache: "no-store" }).then(r => r.text()).then(t => {
     const i = t.indexOf("const CONFIG = "), j = t.indexOf("/* ====================== END OF THE EDITABLE BLOCK", i);
     if (i < 0 || j < 0) return;
@@ -229,6 +229,30 @@
     for (const [id, pt] of Object.entries(CFG.map.dots || {})) if (!S.dots[id]) { S.dots[id] = pt; addDot(id, pt); }
     save(); renderItems();
   }).catch(() => {});
+  // leader lines: a name placed off its spot is joined to it by a thin line.
+  // Flat maths is fine at this scale (a few hundred metres); lng is scaled by
+  // cos(lat) so distances come out the same both ways.
+  function _k(){ return Math.cos(39.4337 * Math.PI / 180); }
+  function _inside(p, poly){ let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const a = poly[i], b = poly[j]; if ((a[0] > p[0]) !== (b[0] > p[0]) && p[1] < (b[1] - a[1]) * (p[0] - a[0]) / (b[0] - a[0]) + a[1]) c = !c; } return c; }
+  function _nearestEdge(p, poly){
+    const k = _k(); let best = null, bd = Infinity;
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length];
+      const ax = a[1] * k, ay = a[0], bx = b[1] * k, by = b[0], px = p[1] * k, py = p[0];
+      const dx = bx - ax, dy = by - ay, t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy || 1)));
+      const qx = ax + t * dx, qy = ay + t * dy, d = (px - qx) ** 2 + (py - qy) ** 2;
+      if (d < bd) { bd = d; best = [qy, qx / k]; }
+    }
+    return best;
+  }
+  // where a name's line ends: its dot, or the nearest edge of its outline when
+  // the name sits outside it; null = no line (the name is on its spot)
+  function _leaderEnd(at, anchor, poly){
+    const m = (a, b) => Math.hypot((a[0] - b[0]) * 111320, (a[1] - b[1]) * 111320 * _k());
+    if (anchor) return m(at, anchor) > 6 ? anchor : null;
+    if (poly && !_inside(at, poly)) { const e = _nearestEdge(at, poly); return m(at, e) > 3 ? e : null; }
+    return null;
+  }
   const mid = (pts) => [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length];
   function nameList() {
     if (!CFG) return [];
@@ -239,7 +263,7 @@
       const d = n.dot && S.dots[n.area];
       const pts = d ? [[d[0] + 0.00005, d[1]]] : S.areas[n.area] || CFG.map.areas[n.area];
       const placed = (S.labels || {})[n.area] || (CFG.map.labels || {})[n.area];
-      return pts ? Object.assign(n, { pos: placed || n.at || mid(pts) }) : null;
+      return pts ? Object.assign(n, { pos: placed || n.at || mid(pts), anchor: d || null, poly: d ? null : pts }) : null;
     }).filter(Boolean);
   }
   // the schedule map opens at zoom 17 on a phone: placing at any other zoom
@@ -259,14 +283,21 @@
   map.on("zoomend", () => { if (nameMarkers.length) markClashes() });
   function showNames() {
     nameMarkers.forEach(m => map.removeLayer(m)); nameMarkers = [];
+    leaderLines.forEach(x => map.removeLayer(x)); leaderLines = [];
     const list = nameList();
     const msg = document.getElementById("names-msg");
     if (!list.length) { msg.textContent = CFG ? "No outlined spots to name yet." : "Could not read the schedule page — try again in a moment."; return false; }
     for (const n of list) {
       const m = L.marker(n.pos, { draggable: true, keyboard: false, pmIgnore: true,
         icon: L.divIcon({ className: "", iconSize: null, html: '<span class="namepin" style="border-left-color:' + n.color + '">' + n.text.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])) + "</span>" }) }).addTo(map);
+      // its line back to the spot, redrawn as the name moves
+      const halo = L.polyline([], { color: "#14201a", weight: 5, opacity: .55, interactive: false, pmIgnore: true }).addTo(map);
+      const line = L.polyline([], { color: n.color, weight: 2.5, interactive: false, pmIgnore: true }).addTo(map);
+      leaderLines.push(halo, line);
+      const drawLine = () => { const p = m.getLatLng(), at = [p.lat, p.lng], e = _leaderEnd(at, n.anchor, n.poly); halo.setLatLngs(e ? [at, e] : []); line.setLatLngs(e ? [at, e] : []); };
+      m.on("drag", drawLine);
       m.on("dragend", () => { const p = m.getLatLng(); S.labels = S.labels || {}; S.labels[n.area] = [+p.lat.toFixed(6), +p.lng.toFixed(6)]; save(); const c = markClashes(); msg.textContent = "Saved — " + Object.keys(S.labels).length + " name(s) moved." + (c ? " " + c + " pair(s) still touch." : ""); });
-      nameMarkers.push(m);
+      nameMarkers.push(m); drawLine();
     }
     msg.textContent = "Drag the names. " + (Object.keys(S.labels || {}).length ? Object.keys(S.labels).length + " moved so far." : "");
     markClashes();
@@ -274,7 +305,7 @@
   }
   document.getElementById("names-btn").onclick = () => {
     const btn = document.getElementById("names-btn");
-    if (nameMarkers.length) { nameMarkers.forEach(m => map.removeLayer(m)); nameMarkers = []; btn.textContent = "Place the names"; return; }
+    if (nameMarkers.length) { nameMarkers.forEach(m => map.removeLayer(m)); nameMarkers = []; leaderLines.forEach(x => map.removeLayer(x)); leaderLines = []; btn.textContent = "Place the names"; return; }
     if (map.getZoom() !== PHONE_ZOOM) map.setZoom(PHONE_ZOOM, { animate: false });
     if (showNames()) btn.textContent = "Done placing names";
   };

@@ -101,6 +101,7 @@ ok('outlines come back after a reload', (await js('document.querySelectorAll(".l
   await sleep(400)
   st = await state()
   ok('dragging a name saves its new spot', st.labels && Array.isArray(st.labels.dock) && st.labels.dock.length === 2, st.labels)
+  ok('a name dragged off its outline gets a line back to it', await js(`[...document.querySelectorAll('.leaflet-overlay-pane path')].some(p => /L/.test(p.getAttribute('d') || '') && p.getAttribute('stroke') === '#cc5de8')`))
   await js(`document.getElementById('names-btn').click(); 1`); await sleep(200)
   ok('Done placing names hides them again', (await js('document.querySelectorAll(".namepin").length')) === 0)
 }
