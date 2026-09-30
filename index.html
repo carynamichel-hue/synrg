@@ -38,14 +38,14 @@ const CONFIG = {
   // Every "where" on the schedule points at one of these by its id.
   // onSite: true  = at Overdevest (shown on the map when it is drawn)
   // url           = a web page to link to (off-site stops)
-  // n             = the number on the map
+  // n             = the number on the map (the pin positions are in siteMapSVG
+  //                 at the bottom of this file — change a number there too)
   places: {
     barn:       { n: 1, onSite: true,  name: { en: "Tractor barn",    es: "Granero de tractores" } },
-    breakroom:  { n: 2, onSite: true,  name: { en: "Break room",      es: "Sala de descanso" } },
-    headhouse:  { n: 3, onSite: true,  name: { en: "Headhouse",       es: "Headhouse (propagación)" } },
-    dock:       { n: 4, onSite: true,  name: { en: "Loading dock",    es: "Muelle de carga" } },
-    trial:      { n: 5, onSite: true,  name: { en: "Trial garden",    es: "Jardín de pruebas" } },
-    conference: { n: 6, onSite: true,  name: { en: "Conference room", es: "Sala de conferencias" } },
+    headhouse:  { n: 2, onSite: true,  name: { en: "Headhouse (entrance to Greenhouse 1)", es: "Headhouse (entrada al Invernadero 1)" } },
+    dock:       { n: 3, onSite: true,  name: { en: "Loading dock",    es: "Muelle de carga" } },
+    trial:      { n: 4, onSite: true,  name: { en: "Trial garden (around the main office)", es: "Jardín de pruebas (alrededor de la oficina principal)" } },
+    conference: { n: 5, onSite: true,  name: { en: "Conference room (in the main office)", es: "Sala de conferencias (en la oficina principal)" } },
     hotel:      { onSite: false, name: "Fairfield Inn & Suites", url: "" },
     lucas:      { onSite: false, name: "Lucas Greenhouses", url: "https://www.lucasgreenhouses.com/" },
     brewery:    { onSite: false, name: "Farmers & Bankers Brewing", url: "https://farmersandbankersbrewing.com/" },
@@ -190,7 +190,12 @@ const CONFIG = {
   // ---- MAP ----------------------------------------------------------------
   // Off until the layout is drawn. Turning it on shows the drawing in
   // siteMapSVG() at the bottom of this file with the numbered places above.
-  showMap: false,
+  showMap: true,
+  // Map-only markers (not schedule places): shown in the legend under the map.
+  mapExtras: [
+    { sym: "P",  name: { en: "Parking — across from the tractor barn", es: "Estacionamiento — frente al granero de tractores" } },
+    { sym: "WC", name: { en: "Portable restrooms — both ends of the tractor barn and by the loading dock", es: "Baños portátiles — a ambos lados del granero y junto al muelle de carga" } },
+  ],
 };
 
 /* ====================== END OF THE EDITABLE BLOCK ========================= */
@@ -305,10 +310,12 @@ const CONFIG = {
   .map-section{padding-top:30px}
   .map-frame{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:var(--shadow)}
   .map-frame svg{width:100%;height:auto;display:block}
-  .legend{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:15px}
+  .legend{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:1fr;gap:7px;font-size:15px}
   .legend li{display:flex;gap:8px;align-items:center;scroll-margin-top:80px}
   .legend .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--g);color:#fff;font-weight:700;font-size:13px;display:grid;place-items:center}
   .legend li:target{background:var(--amber-soft);border-radius:6px}
+  .legend .num.sym-P{background:#2d5d8a;border-radius:5px}
+  .legend .num.sym-WC{background:#0f766e;border-radius:5px;font-size:10px}
 
   /* good to know */
   .info{padding-top:30px;padding-bottom:20px}
@@ -521,7 +528,8 @@ const CONFIG = {
       $("#map-section").hidden = false;
       $("#map-frame").innerHTML = siteMapSVG();
       $("#legend").innerHTML = Object.entries(C.places).filter(([, p]) => p.onSite).sort((a, b) => a[1].n - b[1].n)
-        .map(([id, p]) => '<li id="place-' + id + '"><span class="num">' + p.n + '</span>' + esc(L(p.name)) + '</li>').join("");
+        .map(([id, p]) => '<li id="place-' + id + '"><span class="num">' + p.n + '</span>' + esc(L(p.name)) + '</li>').join("")
+        + (C.mapExtras || []).map(x => '<li><span class="num sym-' + esc(x.sym) + '">' + esc(x.sym) + '</span>' + esc(L(x.name)) + '</li>').join("");
     }
 
     $("#info-list").innerHTML = (C.goodToKnow || []).map(t => {
@@ -596,13 +604,73 @@ const CONFIG = {
 })();
 
 /* --------------------------------------------------------------------------
-   The Overdevest map — to be drawn from Caryn's layout (a simple schematic:
-   labelled buildings, roads, parking, with the numbered places from CONFIG).
-   Only used when CONFIG.showMap is true.
+   The Overdevest map — a simple schematic traced from satellite imagery (the
+   Pesticide app's wind-map tiles, Esri World Imagery, zoom 18). Coordinates are
+   the pixels of that picture (~0.46 m each), so north is up and the buildings
+   keep their real angle. Spots named by Caryn 09-30:
+     1 tractor barn (the long white building) · P parking pad across from it
+     2 headhouse = the entrance to Greenhouse 1 · 3 loading dock
+     4 trial garden around the main office · 5 conference room in the office
+     WC portable restrooms at both ends of the barn and by the dock
+   Pin numbers must match CONFIG.places[…].n.
    -------------------------------------------------------------------------- */
-function siteMapSVG(){ return `
-<svg viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of Overdevest Nurseries — not yet drawn">
-  <rect x="1" y="1" width="598" height="418" rx="6" fill="#f7faf5" stroke="#c9d6c4" stroke-width="2" stroke-dasharray="8 6"/>
+function siteMapSVG(){
+  const pin = (x, y, n) => `<g><circle cx="${x}" cy="${y}" r="19" fill="#2f6b3a" stroke="#fff" stroke-width="4"/><text x="${x}" y="${y + 8}" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">${n}</text></g>`;
+  const wc = (x, y) => `<g><rect x="${x - 17}" y="${y - 13}" width="34" height="26" rx="6" fill="#0f766e" stroke="#fff" stroke-width="3"/><text x="${x}" y="${y + 6}" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">WC</text></g>`;
+  const label = (x, y, t, size) => `<text x="${x}" y="${y}" text-anchor="middle" font-size="${size || 19}" font-weight="600" fill="#1c2b21" stroke="#f3f6f1" stroke-width="5" paint-order="stroke">${t}</text>`;
+  return `
+<svg viewBox="250 -55 740 700" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of Overdevest Nurseries: tractor barn, headhouse and Greenhouse 1, loading dock, trial garden and main office, parking and restrooms" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+  <defs>
+    <pattern id="rows" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(52)"><rect width="14" height="14" fill="#e3ecdf"/><rect width="6" height="14" fill="#d3e0cd"/></pattern>
+    <pattern id="glass" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(52)"><rect width="12" height="12" fill="#dde9ef"/><rect width="2" height="12" fill="#c3d6e0"/></pattern>
+  </defs>
+  <rect x="250" y="-55" width="740" height="700" fill="#eef3ea"/>
+
+  <!-- growing areas, for context only -->
+  <polygon points="250,-55 560,-55 430,40 250,170" fill="url(#rows)"/>
+  <polygon points="860,-55 990,-55 990,330 900,390 830,250" fill="url(#rows)"/>
+  <polygon points="870,520 990,430 990,645 700,645" fill="url(#rows)"/>
+  ${label(330, 40, "Growing area", 16)}${label(930, 120, "Growing area", 16)}
+
+  <!-- drives -->
+  <g stroke="#d4d9d1" stroke-width="30" stroke-linecap="round" fill="none">
+    <path d="M250 420 L800 20"/>
+    <path d="M440 268 L760 23"/>
+    <path d="M640 685 L1000 405"/>
+    <path d="M660 -40 L745 120 L890 500"/>
+  </g>
+
+  <!-- parking pad -->
+  <polygon points="557,27 642,-33 694,34 604,89" fill="#eadcb8" stroke="#c9b27e" stroke-width="2"/>
+  <g><rect x="604" y="11" width="34" height="34" rx="6" fill="#2d5d8a" stroke="#fff" stroke-width="3"/><text x="621" y="36" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">P</text></g>
+
+  <!-- 1 tractor barn -->
+  <polygon points="588,192 622,166 718,292 686,318" fill="#ffffff" stroke="#6b7a70" stroke-width="3"/>
+  ${label(548, 282, "Tractor barn")}
+
+  <!-- trial garden + main office -->
+  <polygon points="716,135 795,45 880,150 780,245" fill="#bfe0b6" stroke="#6fa865" stroke-width="2"/>
+  <polygon points="758,190 800,160 822,195 780,222" fill="#ffffff" stroke="#6b7a70" stroke-width="3"/>
+  ${label(800, 40, "Main office")}
+
+  <!-- Greenhouse 1, entered through the headhouse -->
+  <polygon points="320,405 478,290 568,405 412,518" fill="url(#glass)" stroke="#7d98a8" stroke-width="3"/>
+  ${label(440, 420, "Greenhouse 1")}
+
+  <!-- 3 loading dock -->
+  <polygon points="598,505 775,378 850,470 705,580" fill="#ecebe6" stroke="#8d8a80" stroke-width="3"/>
+  ${label(728, 525, "Loading dock")}
+
+  <!-- restrooms -->
+  ${wc(572, 170)}${wc(733, 322)}${wc(585, 540)}
+
+  <!-- numbered pins (match CONFIG.places) -->
+  ${pin(653, 242, 1)}${pin(523, 347, 2)}${pin(740, 470, 3)}${pin(850, 120, 4)}${pin(790, 191, 5)}
+
+  <!-- north + scale (50 m ≈ 108 px at 0.46 m/px) -->
+  <g transform="translate(955,-20)"><path d="M0 -22 L10 8 L0 2 L-10 8 Z" fill="#1c2b21"/><text y="26" text-anchor="middle" font-size="16" font-weight="700" fill="#1c2b21">N</text></g>
+  <g transform="translate(270,618)"><rect width="108" height="6" fill="#1c2b21"/><text x="0" y="-6" font-size="14" fill="#1c2b21">50 m</text></g>
+  <text x="985" y="638" text-anchor="end" font-size="11" fill="#4a5a4f">Traced from imagery © Esri, Maxar, Earthstar Geographics</text>
 </svg>`; }
 </script>
 </body>
