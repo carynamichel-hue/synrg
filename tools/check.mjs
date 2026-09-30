@@ -62,6 +62,26 @@ ok('check-in, the entrance and the conference room are dots, not outlines', awai
 ok('a name placed off its spot gets a line back to it, a name on its spot none', await js(`(() => { const n = document.querySelectorAll('#sitemap path.leader').length; const ends = _labels.filter(l => !l.dir && _leaderEnd(l.at, l.anchor, l.poly)).map(l => L_(l.text)); return n > 0 && n === ends.length && !ends.includes('Loading dock') })()`))
 ok('no map label overlaps another (at the opening view)', await js(`(() => { const r = [...document.querySelectorAll('#sitemap .maplbl-in, #sitemap .pinb')].map(e => e.getBoundingClientRect()).filter(b => b.width && b.bottom > 0); for (let i = 0; i < r.length; i++) for (let j = i + 1; j < r.length; j++) { const a = r[i], b = r[j]; if (a.left < b.right - 2 && b.left < a.right - 2 && a.top < b.bottom - 2 && b.top < a.bottom - 2) return false } return true })()`))
 ok('no map name is cut off at the map edge (the ones in view)', await js(`(() => { const m = document.getElementById('sitemap').getBoundingClientRect(); return [...document.querySelectorAll('#sitemap .maplbl-in')].map(e => e.getBoundingClientRect()).filter(b => b.right > m.left && b.left < m.right && b.bottom > m.top && b.top < m.bottom).every(b => b.left >= m.left && b.right <= m.right && b.top >= m.top && b.bottom <= m.bottom) })()`))
+// a finger drag moves the map on a phone; ⌂ brings the whole map back
+{
+  await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 })
+  const c0 = await js('JSON.stringify(_map.getCenter())')
+  const r = await js(`(() => { document.getElementById('sitemap').scrollIntoView({ block: 'center' }); const b = document.getElementById('sitemap').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2] })()`)
+  await new Promise(res => setTimeout(res, 300))
+  const r2 = await js(`(() => { const b = document.getElementById('sitemap').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2] })()`)
+  const [x, y] = r2
+  await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] })
+  for (let k = 1; k <= 8; k++) await send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + k * 12, y: y + k * 6 }] })
+  await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await new Promise(res => setTimeout(res, 500))
+  const c1 = await js('JSON.stringify(_map.getCenter())')
+  ok('a one-finger drag moves the map on a phone', c1 !== c0, [c0, c1])
+  await js(`document.querySelector('#sitemap .home-btn').click(); 1`); await new Promise(res => setTimeout(res, 500))
+  const c2 = JSON.parse(await js('JSON.stringify(_map.getCenter())')), a = JSON.parse(c0)
+  ok('⌂ brings the whole map back (same spot to ~10 m, same zoom; the drag moved it ~90 m)', Math.abs(c2.lat - a.lat) < 1e-4 && Math.abs(c2.lng - a.lng) < 1e-4 && (Math.abs(JSON.parse(c1).lat - a.lat) > 1e-4 || Math.abs(JSON.parse(c1).lng - a.lng) > 1e-4) && (await js('_map.getZoom()')) === 17, [c0, c1, c2])
+  ok('the map leaves page to scroll by (no taller than 60% of the screen)', await js('document.getElementById("sitemap").getBoundingClientRect().height <= innerHeight * 0.6 + 1'))
+  await send('Emulation.setTouchEmulationEnabled', { enabled: false })
+}
 ok('every Wednesday and Thursday block has a place (or points at the groups table / the ride list)', await js(`[...document.querySelectorAll('.day')].slice(1).every(d => [...d.querySelectorAll('.card')].every(c => c.querySelector('.b-where') || c.querySelector('.go') || c.querySelector('.stops')))`))
 ok('the WF partner update is a small note under Break, in the conference room', /WF partner sales update in the conference room/.test(await js('document.body.textContent')))
 ok('the traced outlines are drawn (8 shapes + the entrance hit area)', (await js('document.querySelectorAll("#sitemap path.leaflet-interactive, #sitemap path").length')) >= 8)

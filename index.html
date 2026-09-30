@@ -366,7 +366,9 @@ const CONFIG = {
   /* map */
   .map-section{padding-top:30px}
   .map-frame{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:var(--shadow)}
-  #sitemap{height:540px;border-radius:6px;background:#dfe6dc}
+  /* capped so a finger can always scroll the page past it (the map itself pans) */
+  #sitemap{height:min(540px, 60vh);border-radius:6px;background:#dfe6dc}
+  .home-btn{display:block;width:34px;height:34px;line-height:34px;text-align:center;font-size:20px;background:#fff;color:#1c2b21;text-decoration:none;cursor:pointer}
   /* Chrome leaves hairline gaps between tiles at in-between zoom levels; this
      blend hides most of them (overlapping tiles by a pixel made it WORSE —
      bright white seams — tried 09-30) */
@@ -610,7 +612,7 @@ const CONFIG = {
       $("#legend").innerHTML = places.map(([id, p]) => '<li id="place-' + id + '" data-area="' + esc(p.area || p.dot || "") + '"><span class="dot' + (p.dot ? ' round' : '') + '" style="background:' + esc(p.color) + '"></span>' + esc(L(p.name)) + '</li>').join("")
         + (C.mapExtras || []).filter(x => x.name).map(x => '<li data-area="' + esc(x.area || x.dot || "") + '"><span class="dot' + (x.markers ? ' wc' : '') + (x.dot ? ' round' : '') + '" style="background:' + esc(x.color) + '">' + (x.markers ? 'WC' : '') + '</span>' + esc(L(x.name)) + '</li>').join("");
       document.querySelectorAll("#legend li[data-area]").forEach(li => { if (li.dataset.area) li.onclick = () => focusArea(li.dataset.area); });
-      $("#map-note").textContent = lang === "es" ? "Toque un lugar de la lista para verlo en el mapa. El mapa satelital necesita señal." : "Tap a spot in the list to find it on the map. The satellite picture needs a signal.";
+      $("#map-note").textContent = lang === "es" ? "Toque un lugar de la lista para verlo en el mapa. Deslice el mapa con un dedo; ⌂ lo muestra entero otra vez. El mapa satelital necesita señal." : "Tap a spot in the list to find it on the map. Drag the map with a finger to move it; ⌂ shows the whole map again. The satellite picture needs a signal.";
       relabel();
     }
 
@@ -731,8 +733,8 @@ function _mid(pts){ const n = pts.length; return [pts.reduce((a, p) => a + p[0],
 function drawMap(){
   if (_map || typeof L === "undefined") { if (typeof L === "undefined") document.getElementById("sitemap").textContent = "Map unavailable offline."; return; }
   _shapes = {}; _labels = [];
-  const C = CONFIG, M = C.map, touch = matchMedia("(pointer: coarse)").matches;
-  _map = L.map("sitemap", { scrollWheelZoom: false, dragging: !touch, tap: false, zoomSnap: 0.5, maxZoom: 20, attributionControl: true });
+  const C = CONFIG, M = C.map;
+  _map = L.map("sitemap", { scrollWheelZoom: false, dragging: true, tap: false, zoomSnap: 0.5, maxZoom: 20, attributionControl: true });
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
     attribution: "Imagery © Esri, Maxar, Earthstar Geographics", maxNativeZoom: 19, maxZoom: 20,
   }).addTo(_map);
@@ -772,7 +774,15 @@ function drawMap(){
     L.polyline([l.at, end], { pane: "leaders", color: l.color, weight: 2.5, opacity: 1, interactive: false, className: "leader" }).addTo(_map);
   }
   _eventBounds = L.latLngBounds(all);
-  if (M.view && M.view.bounds) _map.fitBounds(M.view.bounds); else if (all.length) _map.fitBounds(all, { padding: [14, 14] });
+  const home = () => { if (M.view && M.view.bounds) _map.fitBounds(M.view.bounds); else if (all.length) _map.fitBounds(all, { padding: [14, 14] }); };
+  home();
+  // ⌂ under the zoom buttons: back to the whole map after panning away
+  const Home = L.Control.extend({ options: { position: "topleft" }, onAdd(){
+    const d = L.DomUtil.create("div", "leaflet-bar"), a = L.DomUtil.create("a", "home-btn", d);
+    a.href = "#"; a.textContent = "⌂"; a.title = a.ariaLabel = "Whole map";
+    L.DomEvent.on(a, "click", e => { L.DomEvent.preventDefault(e); L.DomEvent.stopPropagation(e); home(); });
+    return d; } });
+  new Home().addTo(_map);
 }
 function relabel(){
   if (!_map) return;
