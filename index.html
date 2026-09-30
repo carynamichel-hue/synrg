@@ -43,13 +43,16 @@ const CONFIG = {
   // n             = the number on the map
   // area          = the outline traced on trace.html (a key of map.areas below)
   // color         = the outline's colour on the map
+  // map           = the short name written on the map. labelAt moves it to a clear
+  //                 patch beside its spot (the spots by the barn are too close
+  //                 together for every name to sit on its own outline)
   places: {
-    checkin:    { n: 1, onSite: true, area: "x-check-in", color: "#e03131", name: { en: "Check-in", es: "Registro" } },
-    barn:       { n: 2, onSite: true, area: "barn",       color: "#f2b33d", name: { en: "Tractor barn", es: "Granero de tractores" } },
-    headhouse:  { n: 3, onSite: true, area: "headhouse",  color: "#fd7e14", name: { en: "Headhouse (entrance to Greenhouse 1)", es: "Headhouse (entrada al Invernadero 1)" } },
-    dock:       { n: 4, onSite: true, area: "dock",       color: "#cc5de8", name: { en: "Loading dock", es: "Muelle de carga" } },
-    trial:      { n: 5, onSite: true, area: "trial",      color: "#51cf66", name: { en: "Trial garden (around the main office)", es: "Jardín de pruebas (alrededor de la oficina principal)" } },
-    conference: { n: 6, onSite: true, area: "office",     color: "#ffffff", name: { en: "Conference room (in the main office)", es: "Sala de conferencias (en la oficina principal)" } },
+    checkin:    { n: 1, onSite: true, area: "x-check-in", color: "#e03131", map: { en: "Check-in", es: "Registro" }, labelAt: [39.434358, -75.311869], name: { en: "Check-in", es: "Registro" } },
+    barn:       { n: 2, onSite: true, area: "barn",       color: "#f2b33d", map: { en: "Tractor barn", es: "Granero" }, labelAt: [39.433985, -75.312781], name: { en: "Tractor barn", es: "Granero de tractores" } },
+    headhouse:  { n: 3, onSite: true, area: "headhouse",  color: "#fd7e14", map: { en: "Headhouse", es: "Headhouse" }, name: { en: "Headhouse (entrance to Greenhouse 1)", es: "Headhouse (entrada al Invernadero 1)" } },
+    dock:       { n: 4, onSite: true, area: "dock",       color: "#cc5de8", map: { en: "Loading dock", es: "Muelle de carga" }, name: { en: "Loading dock", es: "Muelle de carga" } },
+    trial:      { n: 5, onSite: true, area: "trial",      color: "#51cf66", map: { en: "Trial garden", es: "Jardín de pruebas" }, labelAt: [39.434005, -75.311011], name: { en: "Trial garden (around the main office)", es: "Jardín de pruebas (alrededor de la oficina principal)" } },
+    conference: { n: 6, onSite: true, area: "office",     color: "#ffffff", map: { en: "Conference room", es: "Sala de conferencias" }, labelDir: "bottom", name: { en: "Conference room (in the main office)", es: "Sala de conferencias (en la oficina principal)" } },
     hotel:      { onSite: false, name: "Fairfield Inn & Suites", url: "" },
     lucas:      { onSite: false, name: "Lucas Greenhouses", url: "https://www.lucasgreenhouses.com/" },
     brewery:    { onSite: false, name: "Farmers & Bankers Brewing", url: "https://farmersandbankersbrewing.com/" },
@@ -61,6 +64,7 @@ const CONFIG = {
   // where         a place id from above, or "" if the block has no one place
   // ride          "provided" = we drive (bus/van) · "own" = people get there themselves
   // details       optional sentence
+  // note          optional small print under it (something only a few people need)
   // stops         optional sub-items: { name, details }
   // groups        true = this block points at the working-groups table
   days: [
@@ -72,10 +76,10 @@ const CONFIG = {
         { start: "14:00", end: "14:15", where: "checkin", ride: "own",
           title: { en: "Arrival and welcome", es: "Llegada y bienvenida" },
           details: { en: "Make your own way to Overdevest Nurseries.", es: "Llegue por su cuenta a Overdevest Nurseries." } },
-        { start: "14:15", end: "17:00", where: "",
+        { start: "14:15", end: "17:00", where: "barn",
           title: { en: "Nursery tour", es: "Recorrido del vivero" },
-          details: { en: "A tour of the nursery, which may include the Trial Gardens.", es: "Un recorrido por el vivero, que puede incluir los jardines de prueba." } },
-        { start: "17:00", end: "20:00", where: "",
+          details: { en: "Starts at the tractor barn. A tour of the nursery, which may include the Trial Gardens.", es: "Empieza en el granero de tractores. Un recorrido por el vivero, que puede incluir los jardines de prueba." } },
+        { start: "17:00", end: "20:00", where: "barn",
           title: { en: "Dinner and cornhole", es: "Cena y cornhole" },
           details: { en: "Dinner, then the cornhole competition.", es: "Cena y después la competencia de cornhole." } },
         { start: "20:00", end: "20:30", where: "hotel", ride: "own",
@@ -91,19 +95,20 @@ const CONFIG = {
         { start: "07:15", end: "07:45", where: "hotel", ride: "provided",
           title: { en: "Ride to the nursery", es: "Transporte al vivero" },
           details: { en: "Leaves the Fairfield Inn & Suites at 7:15.", es: "Sale del Fairfield Inn & Suites a las 7:15." } },
-        { start: "07:45", end: "08:00", where: "",
+        { start: "07:45", end: "08:00", where: "barn",
           title: { en: "Arrive at Overdevest", es: "Llegada a Overdevest" } },
         { start: "08:00", end: "09:30", where: "", groups: true,
           title: { en: "Working groups · Session 1", es: "Grupos de trabajo · Sesión 1" },
-          details: { en: "Each group meets in its own room — see the table below.", es: "Cada grupo se reúne en su propio lugar — vea la tabla abajo." } },
-        { start: "09:30", end: "09:45", where: "",
-          title: { en: "Break and WF partner sales update", es: "Descanso y actualización de ventas de socios WF" } },
+          details: { en: "See the table below for where each group meets.", es: "Vea la tabla abajo para saber dónde se reúne cada grupo." } },
+        { start: "09:30", end: "09:45", where: "barn",
+          title: { en: "Break", es: "Descanso" },
+          note: { en: "WF partner sales update in the conference room (for WF partners).", es: "Actualización de ventas de socios WF en la sala de conferencias (para los socios WF)." } },
         { start: "09:45", end: "10:30", where: "barn",
           title: { en: "Harnessing AI to Solve Problems", es: "Usar la IA para resolver problemas" } },
         { start: "10:30", end: "12:00", where: "", groups: true,
           title: { en: "Working groups · Session 2", es: "Grupos de trabajo · Sesión 2" },
-          details: { en: "Same rooms as Session 1 — see the table below.", es: "Los mismos lugares que la Sesión 1 — vea la tabla abajo." } },
-        { start: "12:00", end: "13:30", where: "",
+          details: { en: "See the table below for where each group meets.", es: "Vea la tabla abajo para saber dónde se reúne cada grupo." } },
+        { start: "12:00", end: "13:30", where: "barn",
           title: { en: "Lunch with special guest Adept Ag", es: "Almuerzo con el invitado especial Adept Ag" } },
         { start: "13:30", end: "14:00", where: "lucas", ride: "provided",
           title: { en: "Ride to Lucas Greenhouses", es: "Transporte a Lucas Greenhouses" } },
@@ -131,17 +136,17 @@ const CONFIG = {
         { start: "07:15", end: "07:45", where: "hotel", ride: "own",
           title: { en: "Check out and head to the nursery", es: "Salida del hotel y camino al vivero" },
           details: { en: "Check out of the hotel and make your own way to Overdevest.", es: "Deje el hotel y llegue por su cuenta a Overdevest." } },
-        { start: "07:45", end: "08:00", where: "",
+        { start: "07:45", end: "08:00", where: "barn",
           title: { en: "Arrive at Overdevest", es: "Llegada a Overdevest" } },
         { start: "08:00", end: "09:30", where: "barn",
           title: { en: "Working group share-out", es: "Presentación de los grupos de trabajo" },
           details: { en: "Each group leader shares what the group did and learned, with time for questions.", es: "Cada líder comparte lo que hizo y aprendió su grupo, con tiempo para preguntas." } },
-        { start: "09:30", end: "09:45", where: "",
+        { start: "09:30", end: "09:45", where: "barn",
           title: { en: "Break", es: "Descanso" } },
         { start: "09:45", end: "12:00", where: "barn",
           title: { en: "Grower Innovation Showcase", es: "Muestra de innovación de productores" },
           details: { en: "Each of the six visiting nurseries shares something new they did this year.", es: "Cada uno de los seis viveros visitantes comparte algo nuevo que hizo este año." } },
-        { start: "12:00", end: "12:30", where: "",
+        { start: "12:00", end: "12:30", where: "barn",
           title: { en: "Grab-and-go lunch and departures", es: "Almuerzo para llevar y salidas" },
           details: { en: "Safe travels home!", es: "¡Buen viaje de regreso!" } },
       ],
@@ -215,10 +220,10 @@ const CONFIG = {
   // On the map but not schedule places: shown on the picture and in the legend.
   // area = an outline above; pin true = shown as a marker at its middle.
   mapExtras: [
-    { sym: "P",  area: "parking", color: "#339af0", name: { en: "Parking — across from the tractor barn", es: "Estacionamiento — frente al granero de tractores" } },
+    { sym: "P",  area: "parking", color: "#339af0", map: { en: "Parking", es: "Estacionamiento" }, name: { en: "Parking — across from the tractor barn", es: "Estacionamiento — frente al granero de tractores" } },
     { sym: "WC", markers: "wc",   color: "#0f766e", name: { en: "Portable restrooms", es: "Baños portátiles" } },
     // pin: a marker, and the map does not zoom out to include it when it opens
-    { sym: "➜",  area: "x-entrance", pin: true, color: "#1c2b21", name: { en: "Farm entrance (off the main road)", es: "Entrada del vivero (desde la carretera)" } },
+    { sym: "➜",  area: "x-entrance", pin: true, color: "#1c2b21", map: { en: "➜ Entrance", es: "➜ Entrada" }, name: { en: "Farm entrance (off the main road)", es: "Entrada del vivero (desde la carretera)" } },
     // labelAt: where the name sits — on the far side from the headhouse, so it never covers pin 3
     { sym: "",   area: "greenhouse1", color: "#74c0fc", labelAt: [39.43226, -75.31322], label: { en: "Greenhouse 1", es: "Invernadero 1" } },
   ],
@@ -306,6 +311,7 @@ const CONFIG = {
   .b-where{display:block;margin-top:5px;font-size:14.5px;color:var(--slate)}
   .b-where a{color:var(--g);font-weight:600}
   .card p{margin:8px 0 0;font-size:15.5px;line-height:1.45;color:var(--g-deep)}
+  .card p.b-note{font-size:13.5px;color:var(--slate)}
   .badge{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:3px 7px;border-radius:3px;vertical-align:3px;margin-left:8px}
   .badge.now{background:var(--amber);color:var(--ink)}
   .badge.next{background:var(--g);color:#fff}
@@ -345,7 +351,8 @@ const CONFIG = {
         box-shadow:0 1px 4px rgba(0,0,0,.45);font-family:var(--body)}
   .pinb.sq{border-radius:7px}
   .pinb.wc{width:28px;height:19px;border-radius:5px;font-size:9.5px}
-  .maplbl{background:rgba(28,43,33,.8);color:#fff;border:0;border-radius:4px;font-weight:600;font-size:12px;padding:1px 6px;box-shadow:none}
+  .maplbl{background:none;border:0;box-shadow:none;padding:0}
+  .maplbl-in{display:block;background:rgba(20,30,24,.86);color:#fff;border-left:5px solid #fff;border-radius:4px;font-weight:700;font-size:12.5px;line-height:1.25;padding:3px 7px;white-space:nowrap}
   .maplbl::before{display:none}
   .flash{animation:flash 1.2s ease-in-out 2}
   @keyframes flash{50%{stroke-width:8px;fill-opacity:.55}}
@@ -353,6 +360,8 @@ const CONFIG = {
   .legend li{display:flex;gap:8px;align-items:center;scroll-margin-top:80px}
   .legend .num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--g);color:#1c2b21;font-weight:800;font-size:13px;display:grid;place-items:center;border:2px solid rgba(0,0,0,.25)}
   .legend li{cursor:pointer}
+  .legend .dot{flex:none;width:16px;height:16px;border-radius:4px;border:2px solid rgba(0,0,0,.25)}
+  .legend .dot.wc{width:30px;height:20px;color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center}
   .legend li:target{background:var(--amber-soft);border-radius:6px}
 
   /* good to know */
@@ -545,6 +554,7 @@ const CONFIG = {
         if (w) h += '<span class="b-where">' + w + '</span>';
         if (b.ride) h += '<span class="ride ' + b.ride + '">' + esc(u(b.ride)) + '</span>';
         if (b.details) h += '<p>' + esc(L(b.details)) + '</p>';
+        if (b.note) h += '<p class="b-note">' + esc(L(b.note)) + '</p>';
         if (b.stops) h += '<ul class="stops">' + b.stops.map(s => '<li><b>' + esc(L(s.name)) + '</b>' + (s.details ? '<p>' + esc(L(s.details)) + '</p>' : '') + '</li>').join("") + '</ul>';
         if (b.groups) h += '<a class="go" href="#groups">' + esc(u("seeGroups")) + ' ↓</a>';
         return h + '</div></div>';
@@ -567,8 +577,8 @@ const CONFIG = {
       $("#map-section").hidden = false;
       drawMap();
       const places = Object.entries(C.places).filter(([, p]) => p.onSite).sort((a, b) => a[1].n - b[1].n);
-      $("#legend").innerHTML = places.map(([id, p]) => '<li id="place-' + id + '" data-area="' + esc(p.area || "") + '"><span class="num" style="background:' + esc(p.color) + ';color:' + inkOn(p.color) + '">' + p.n + '</span>' + esc(L(p.name)) + '</li>').join("")
-        + (C.mapExtras || []).filter(x => x.name).map(x => '<li data-area="' + esc(x.area || "") + '"><span class="num" style="background:' + esc(x.color) + ';color:#fff;border-radius:6px;font-size:' + (x.sym.length > 1 ? 10 : 13) + 'px">' + esc(x.sym) + '</span>' + esc(L(x.name)) + '</li>').join("");
+      $("#legend").innerHTML = places.map(([id, p]) => '<li id="place-' + id + '" data-area="' + esc(p.area || "") + '"><span class="dot" style="background:' + esc(p.color) + '"></span>' + esc(L(p.name)) + '</li>').join("")
+        + (C.mapExtras || []).filter(x => x.name).map(x => '<li data-area="' + esc(x.area || "") + '"><span class="dot' + (x.markers ? ' wc' : '') + '" style="background:' + esc(x.color) + '">' + (x.markers ? 'WC' : '') + '</span>' + esc(L(x.name)) + '</li>').join("");
       document.querySelectorAll("#legend li[data-area]").forEach(li => { if (li.dataset.area) li.onclick = () => focusArea(li.dataset.area); });
       $("#map-note").textContent = lang === "es" ? "Toque un lugar de la lista para verlo en el mapa. El mapa satelital necesita señal." : "Tap a spot in the list to find it on the map. The satellite picture needs a signal.";
       relabel();
@@ -681,13 +691,12 @@ function drawMap(){
   for (const x of C.mapExtras || []) {
     if (x.markers) { (M[x.markers] || []).forEach(p => { all.push(p); badge(p, x.sym, x.color, "wc"); }); continue; }
     const pts = x.pin ? (M.areas[x.area] || null) : outline(x.area, x.color);
-    if (x.pin && pts) { badge(_mid(pts), x.sym, x.color, "sq"); _shapes[x.area] = L.polygon(pts, { opacity: 0, fillOpacity: 0, interactive: false }).addTo(_map); }
-    else if (pts && x.sym) badge(_mid(pts), x.sym, x.color, "sq");
-    if (pts && x.label) _labels.push({ at: x.labelAt || _mid(pts), text: x.label });
+    if (x.pin && pts) _shapes[x.area] = L.polygon(pts, { opacity: 0, fillOpacity: 0, interactive: false }).addTo(_map);
+    if (pts && (x.map || x.label)) _labels.push({ at: x.labelAt || _mid(pts), text: x.map || x.label, color: x.color, dir: x.labelDir });
   }
   for (const p of Object.values(C.places)) {
     if (!p.onSite || !p.area) continue;
-    const pts = outline(p.area, p.color); if (pts) badge(_mid(pts), p.n, p.color);
+    const pts = outline(p.area, p.color); if (pts) _labels.push({ at: p.labelAt || _mid(pts), text: p.map || p.name, color: p.color, dir: p.labelDir });
   }
   _eventBounds = L.latLngBounds(all);
   if (M.view && M.view.bounds) _map.fitBounds(M.view.bounds); else if (all.length) _map.fitBounds(all, { padding: [14, 14] });
@@ -695,7 +704,11 @@ function drawMap(){
 function relabel(){
   if (!_map) return;
   _labels.forEach(l => l.layer && _map.removeLayer(l.layer));
-  _labels.forEach(l => { l.layer = L.tooltip({ permanent: true, direction: "center", className: "maplbl", interactive: false }).setLatLng(l.at).setContent(L_(l.text)).addTo(_map); });
+  _labels.forEach(l => {
+    const content = '<span class="maplbl-in" style="border-left-color:' + (l.color || "#fff") + '">' + L_(l.text).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])) + '</span>';
+    l.layer = L.tooltip({ permanent: true, direction: l.dir || "center", className: "maplbl", interactive: false, offset: l.dir === "top" ? [0, -4] : l.dir === "bottom" ? [0, 4] : [0, 0] })
+      .setLatLng(l.at).setContent(content).addTo(_map);
+  });
 }
 function L_(v){ const lang = document.documentElement.lang || "en"; return typeof v === "string" ? v : (v[lang] || v.en || ""); }
 function focusArea(key){
