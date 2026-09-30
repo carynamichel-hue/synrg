@@ -24,15 +24,15 @@
 
 /* Turn OFF before the QR code goes up: while true, every blank field prints an
    orange ADD chip, which is a working note, not something a guest should see. */
-const EDIT_MODE = true;
+const EDIT_MODE = false;
 
 const CONFIG = {
   eventName: "SynRG '26",
   orgName:   { en: "Hosted by Overdevest Nurseries", es: "Organizado por Overdevest Nurseries" },
   dateLabel: { en: "October 6–8, 2026", es: "6–8 de octubre de 2026" },
 
-  // Who to call. Blank = no call button. Public page: only a number you would
-  // print on a flyer.
+  // Who to call. Blank = no call button (Caryn 09-30: not needed — everyone has
+  // the numbers). Public page: only a number you would print on a flyer.
   contactName:  "",
   contactPhone: "",
 
@@ -41,18 +41,18 @@ const CONFIG = {
   // onSite: true  = at Overdevest (shown on the map when it is drawn)
   // url           = a web page to link to (off-site stops)
   // n             = the number on the map
-  // area          = the outline traced on trace.html (a key of map.areas below)
+  // area / dot    = its outline in map.areas, or its single spot in map.dots
   // color         = the outline's colour on the map
   // map           = the short name written on the map. labelAt moves it to a clear
   //                 patch beside its spot (the spots by the barn are too close
   //                 together for every name to sit on its own outline)
   places: {
-    checkin:    { n: 1, onSite: true, area: "x-check-in", color: "#e03131", map: { en: "Check-in", es: "Registro" }, labelAt: [39.434358, -75.311869], name: { en: "Check-in", es: "Registro" } },
+    checkin:    { n: 1, onSite: true, dot: "checkin",     color: "#e03131", map: { en: "Check-in", es: "Registro" }, labelAt: [39.434358, -75.311869], name: { en: "Check-in", es: "Registro" } },
     barn:       { n: 2, onSite: true, area: "barn",       color: "#f2b33d", map: { en: "Tractor barn", es: "Granero" }, labelAt: [39.433985, -75.312781], name: { en: "Tractor barn", es: "Granero de tractores" } },
     headhouse:  { n: 3, onSite: true, area: "headhouse",  color: "#fd7e14", map: { en: "Headhouse", es: "Headhouse" }, name: { en: "Headhouse", es: "Headhouse" } },
     dock:       { n: 4, onSite: true, area: "dock",       color: "#cc5de8", map: { en: "Loading dock", es: "Muelle de carga" }, name: { en: "Loading dock", es: "Muelle de carga" } },
     trial:      { n: 5, onSite: true, area: "trial",      color: "#51cf66", map: { en: "Trial garden", es: "Jardín de pruebas" }, labelAt: [39.434005, -75.311011], name: { en: "Trial garden (around the main office)", es: "Jardín de pruebas (alrededor de la oficina principal)" } },
-    conference: { n: 6, onSite: true, area: "office",     color: "#ffffff", map: { en: "Conference room", es: "Sala de conferencias" }, labelDir: "bottom", name: { en: "Conference room (in the main office)", es: "Sala de conferencias (en la oficina principal)" } },
+    conference: { n: 6, onSite: true, dot: "conference",  color: "#ffffff", map: { en: "Conference room", es: "Sala de conferencias" }, labelDir: "bottom", name: { en: "Conference room (in the main office)", es: "Sala de conferencias (en la oficina principal)" } },
     hotel:      { onSite: false, name: "Fairfield Inn & Suites", url: "" },
     lucas:      { onSite: false, name: "Lucas Greenhouses", url: "https://www.lucasgreenhouses.com/" },
     brewery:    { onSite: false, name: "Farmers & Bankers Brewing", url: "https://farmersandbankersbrewing.com/" },
@@ -207,23 +207,25 @@ const CONFIG = {
     areas: {
       barn: [[39.4342084,-75.3118962],[39.4340178,-75.3116924],[39.4337319,-75.3121698],[39.4339225,-75.3123844]],
       headhouse: [[39.4328536,-75.3127599],[39.4327293,-75.3129798],[39.4322652,-75.3125238],[39.4323771,-75.3123146]],
-      office: [[39.4331892,-75.3113705],[39.4331726,-75.3113276],[39.4331519,-75.3112417],[39.433185,-75.3111774],[39.4332348,-75.3111613],[39.433272,-75.3110594],[39.4333176,-75.3109467],[39.4334253,-75.3110647],[39.4333549,-75.3112417],[39.4333052,-75.3112686],[39.4333093,-75.3113222],[39.4332679,-75.3113866]],
       parking: [[39.4338024,-75.3115046],[39.4336408,-75.3113329],[39.4334088,-75.3116977],[39.4335704,-75.3118372]],
       trial: [[39.4334005,-75.3116655],[39.4328909,-75.3112525],[39.433272,-75.3105712],[39.4339018,-75.3112042],[39.4338107,-75.3114617],[39.4336284,-75.3112954]],
       dock: [[39.4325387,-75.3112096],[39.4321119,-75.310775],[39.4315236,-75.3117782],[39.4319462,-75.3122073]],
       greenhouse1: [[39.432866,-75.3127599],[39.4323357,-75.3136933],[39.4318923,-75.3132051],[39.4323978,-75.3123254],[39.432837,-75.3127223]],
-      "x-entrance": [[39.4357538,-75.308286],[39.4356875,-75.3082108],[39.4357621,-75.308404]],
-      "x-check-in": [[39.4339256,-75.3117996],[39.4339122,-75.3117876],[39.433907,-75.311805],[39.4339111,-75.3118184]],
     },
+    // dots: a single spot (a place or map extra with dot: "<key>")
+    dots: {checkin: [39.433914,-75.3118027], conference: [39.4332655,-75.311214], entrance: [39.4357345,-75.3083003]},
     wc: [[39.4340551,-75.3116494],[39.4337278,-75.3122556],[39.432576,-75.3111345]],
+    // where each name sits, if placed on trace.html ("Place the names"); a spot
+    // missing here uses its labelAt / the middle of its outline
+    labels: {},
   },
   // On the map but not schedule places: shown on the picture and in the legend.
-  // area = an outline above; pin true = shown as a marker at its middle.
+  // area = an outline above; dot = a single spot in map.dots.
   mapExtras: [
     { sym: "P",  area: "parking", color: "#339af0", map: { en: "Parking", es: "Estacionamiento" }, name: { en: "Parking — across from the tractor barn", es: "Estacionamiento — frente al granero de tractores" } },
     { sym: "WC", markers: "wc",   color: "#0f766e", name: { en: "Portable restrooms", es: "Baños portátiles" } },
-    // pin: a marker, and the map does not zoom out to include it when it opens
-    { sym: "➜",  area: "x-entrance", pin: true, color: "#1c2b21", map: { en: "➜ Entrance", es: "➜ Entrada" }, name: { en: "Farm entrance (off the main road)", es: "Entrada del vivero (desde la carretera)" } },
+    // the map does not zoom out to include the entrance when it opens (far: true)
+    { sym: "➜",  dot: "entrance", far: true, color: "#1c2b21", map: { en: "➜ Entrance", es: "➜ Entrada" }, name: { en: "Farm entrance (off the main road)", es: "Entrada del vivero (desde la carretera)" } },
     // labelAt: where the name sits — on the far side from the headhouse, so it never covers pin 3
     { sym: "",   area: "greenhouse1", color: "#74c0fc", labelAt: [39.43226, -75.31322], label: { en: "Greenhouse 1", es: "Invernadero 1" } },
   ],
@@ -362,6 +364,7 @@ const CONFIG = {
   .legend li{cursor:pointer}
   .legend .dot{flex:none;width:16px;height:16px;border-radius:4px;border:2px solid rgba(0,0,0,.25)}
   .legend .dot.wc{width:30px;height:20px;color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center}
+  .legend .dot.round{border-radius:50%}
   .legend li:target{background:var(--amber-soft);border-radius:6px}
 
   /* good to know */
@@ -577,8 +580,8 @@ const CONFIG = {
       $("#map-section").hidden = false;
       drawMap();
       const places = Object.entries(C.places).filter(([, p]) => p.onSite).sort((a, b) => a[1].n - b[1].n);
-      $("#legend").innerHTML = places.map(([id, p]) => '<li id="place-' + id + '" data-area="' + esc(p.area || "") + '"><span class="dot" style="background:' + esc(p.color) + '"></span>' + esc(L(p.name)) + '</li>').join("")
-        + (C.mapExtras || []).filter(x => x.name).map(x => '<li data-area="' + esc(x.area || "") + '"><span class="dot' + (x.markers ? ' wc' : '') + '" style="background:' + esc(x.color) + '">' + (x.markers ? 'WC' : '') + '</span>' + esc(L(x.name)) + '</li>').join("");
+      $("#legend").innerHTML = places.map(([id, p]) => '<li id="place-' + id + '" data-area="' + esc(p.area || p.dot || "") + '"><span class="dot' + (p.dot ? ' round' : '') + '" style="background:' + esc(p.color) + '"></span>' + esc(L(p.name)) + '</li>').join("")
+        + (C.mapExtras || []).filter(x => x.name).map(x => '<li data-area="' + esc(x.area || x.dot || "") + '"><span class="dot' + (x.markers ? ' wc' : '') + (x.dot ? ' round' : '') + '" style="background:' + esc(x.color) + '">' + (x.markers ? 'WC' : '') + '</span>' + esc(L(x.name)) + '</li>').join("");
       document.querySelectorAll("#legend li[data-area]").forEach(li => { if (li.dataset.area) li.onclick = () => focusArea(li.dataset.area); });
       $("#map-note").textContent = lang === "es" ? "Toque un lugar de la lista para verlo en el mapa. El mapa satelital necesita señal." : "Tap a spot in the list to find it on the map. The satellite picture needs a signal.";
       relabel();
@@ -590,7 +593,7 @@ const CONFIG = {
     }).join("");
     $("#calls").innerHTML = C.contactPhone
       ? '<a href="tel:' + esc(C.contactPhone.replace(/[^0-9+]/g, "")) + '">' + esc(u("call") + " " + (C.contactName || "")) + '</a>'
-      : (EDIT_MODE ? fill("", lang === "es" ? "a quién llamar" : "who to call") : "");
+      : "";   // no call button: everyone already has the contact numbers (Caryn, 09-30)
     $("#links").innerHTML = (C.links || []).map(l => '<a href="' + esc(l.url) + '" target="_blank" rel="noopener"><b>' + esc(L(l.name)) + ' →</b><span>' + esc(L(l.sub)) + '</span></a>').join("");
 
     if (EDIT_MODE) $("#editnote").innerHTML = '<div class="editnote">EDIT MODE — orange chips mark what still needs filling in (the CONFIG block at the top of index.html). Set EDIT_MODE to false before the QR code goes up.</div>';
@@ -643,7 +646,7 @@ const CONFIG = {
     return (sameDay ? "" : L(C.days[b.di].short) + " ") + fmt(b.startAt);
   }
 
-  window.addEventListener("hashchange", () => { const id = location.hash.replace("#place-", ""); if (C.places[id] && C.places[id].area) setTimeout(() => focusArea(C.places[id].area), 300); });
+  window.addEventListener("hashchange", () => { const id = location.hash.replace("#place-", ""); if (C.places[id] && (C.places[id].area || C.places[id].dot)) setTimeout(() => focusArea(C.places[id].area || C.places[id].dot), 300); });
   $("#lang-btn").addEventListener("click", () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem(KEY, lang); } catch (e) {} render(); });
   $("#jump-btn").addEventListener("click", () => {
     const s = state(new Date()); const target = s.current || s.next || all[all.length - 1];
@@ -670,6 +673,9 @@ const CONFIG = {
 var _map, _shapes, _labels, _eventBounds;
 // readable text on a coloured badge: white on dark fills, ink on light ones
 function inkOn(c){ const n = parseInt(c.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? "#1c2b21" : "#fff"; }
+// Where Caryn placed a name on trace.html (map.labels), if she did: it wins
+// over labelAt / labelDir.
+function labelSpot(area){ const L = CONFIG.map.labels; return L && L[area] ? L[area] : null; }
 function _mid(pts){ const n = pts.length; return [pts.reduce((a, p) => a + p[0], 0) / n, pts.reduce((a, p) => a + p[1], 0) / n]; }
 function drawMap(){
   if (_map || typeof L === "undefined") { if (typeof L === "undefined") document.getElementById("sitemap").textContent = "Map unavailable offline."; return; }
@@ -682,6 +688,14 @@ function drawMap(){
   const badge = (latlng, html, color, cls) => L.marker(latlng, { interactive: false, keyboard: false,
     icon: L.divIcon({ className: "", html: '<div class="pinb ' + (cls || "") + '" style="background:' + color + ';color:' + inkOn(color) + '">' + html + '</div>', iconSize: [28, 28], iconAnchor: [14, 14] }) }).addTo(_map);
   const all = [];
+  // a dot: a round marker with a ring, so a white one still shows on the picture
+  const dot = (key, color, far) => {
+    const pt = (M.dots || {})[key]; if (!pt) return null;
+    if (!far) all.push(pt);
+    _shapes[key] = L.circleMarker(pt, { radius: 8, color: inkOn(color) === "#fff" ? "#fff" : "#1c2b21", weight: 3, fillColor: color, fillOpacity: 1, interactive: false }).addTo(_map);
+    return pt;
+  };
+  const dotLabel = (key, at, x) => ({ at: labelSpot(key) || x.labelAt || at, text: x.map || x.label || x.name, color: x.color, dir: labelSpot(key) || x.labelAt ? null : (x.labelDir || "top"), dot: true });
   const outline = (key, color) => {
     const pts = M.areas[key]; if (!pts) return null;
     all.push(...pts);
@@ -690,13 +704,14 @@ function drawMap(){
   };
   for (const x of C.mapExtras || []) {
     if (x.markers) { (M[x.markers] || []).forEach(p => { all.push(p); badge(p, x.sym, x.color, "wc"); }); continue; }
-    const pts = x.pin ? (M.areas[x.area] || null) : outline(x.area, x.color);
-    if (x.pin && pts) _shapes[x.area] = L.polygon(pts, { opacity: 0, fillOpacity: 0, interactive: false }).addTo(_map);
-    if (pts && (x.map || x.label)) _labels.push({ at: x.labelAt || _mid(pts), text: x.map || x.label, color: x.color, dir: x.labelDir });
+    if (x.dot) { const pt = dot(x.dot, x.color, x.far); if (pt && (x.map || x.label)) _labels.push(dotLabel(x.dot, pt, x)); continue; }
+    const pts = outline(x.area, x.color);
+    if (pts && (x.map || x.label)) _labels.push({ at: labelSpot(x.area) || x.labelAt || _mid(pts), text: x.map || x.label, color: x.color, dir: labelSpot(x.area) ? null : x.labelDir });
   }
   for (const p of Object.values(C.places)) {
+    if (p.onSite && p.dot) { const pt = dot(p.dot, p.color); if (pt) _labels.push(dotLabel(p.dot, pt, p)); continue; }
     if (!p.onSite || !p.area) continue;
-    const pts = outline(p.area, p.color); if (pts) _labels.push({ at: p.labelAt || _mid(pts), text: p.map || p.name, color: p.color, dir: p.labelDir });
+    const pts = outline(p.area, p.color); if (pts) _labels.push({ at: labelSpot(p.area) || p.labelAt || _mid(pts), text: p.map || p.name, color: p.color, dir: labelSpot(p.area) ? null : p.labelDir });
   }
   _eventBounds = L.latLngBounds(all);
   if (M.view && M.view.bounds) _map.fitBounds(M.view.bounds); else if (all.length) _map.fitBounds(all, { padding: [14, 14] });
@@ -706,17 +721,18 @@ function relabel(){
   _labels.forEach(l => l.layer && _map.removeLayer(l.layer));
   _labels.forEach(l => {
     const content = '<span class="maplbl-in" style="border-left-color:' + (l.color || "#fff") + '">' + L_(l.text).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])) + '</span>';
-    l.layer = L.tooltip({ permanent: true, direction: l.dir || "center", className: "maplbl", interactive: false, offset: l.dir === "top" ? [0, -4] : l.dir === "bottom" ? [0, 4] : [0, 0] })
+    l.layer = L.tooltip({ permanent: true, direction: l.dir || "center", className: "maplbl", interactive: false, offset: l.dir === "top" ? [0, l.dot ? -10 : -4] : l.dir === "bottom" ? [0, l.dot ? 10 : 4] : l.dir === "left" && l.dot ? [-10, 0] : l.dir === "right" && l.dot ? [10, 0] : [0, 0] })
       .setLatLng(l.at).setContent(content).addTo(_map);
   });
 }
 function L_(v){ const lang = document.documentElement.lang || "en"; return typeof v === "string" ? v : (v[lang] || v.en || ""); }
 function focusArea(key){
   const shape = _shapes[key]; if (!_map || !shape) return;
+  const b = shape.getLatLng ? L.latLngBounds([shape.getLatLng(), shape.getLatLng()]) : shape.getBounds();
   document.getElementById("map-section").scrollIntoView({ behavior: "smooth", block: "start" });
-  // a pin (the entrance) is shown together with the event area, so people see how the two connect
-  const pinKey = (CONFIG.mapExtras || []).some(x => x.pin && x.area === key);
-  _map.fitBounds(pinKey ? shape.getBounds().extend(_eventBounds) : shape.getBounds(), { maxZoom: 19, padding: [40, 40] });
+  // a far spot (the entrance) is shown together with the event area, so people see how the two connect
+  const far = (CONFIG.mapExtras || []).some(x => x.far && x.dot === key);
+  _map.fitBounds(far ? b.extend(_eventBounds) : b, { maxZoom: 19, padding: [40, 40] });
   const el = shape.getElement && shape.getElement();
   if (el) { el.classList.remove("flash"); void el.getBoundingClientRect(); el.classList.add("flash"); }
 }

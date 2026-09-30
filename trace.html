@@ -35,6 +35,10 @@
   textarea{width:100%;height:90px;font:12px ui-monospace,Consolas,monospace;border:1px solid var(--line);border-radius:6px;padding:6px}
   .lbl{background:rgba(28,43,33,.82);color:#fff;border:0;border-radius:4px;font-weight:600;padding:2px 6px;box-shadow:none}
   .lbl::before{display:none}
+  /* a name being placed: looks like the schedule map's label, centred on its point */
+  .tdot{display:block;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #0006;cursor:grab}
+  .namepin{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;cursor:grab;background:rgba(20,30,24,.86);color:#fff;
+           border-left:5px solid #fff;border-radius:4px;font-weight:700;font-size:12.5px;line-height:1.25;padding:3px 7px;box-shadow:0 0 0 2px #f2b33d}
   @media (max-width:800px){.app{grid-template-columns:1fr;grid-template-rows:62vh auto;height:auto}#map{height:62vh}aside{border-left:0;border-top:1px solid var(--line)}}
 </style>
 </head>
@@ -48,7 +52,9 @@
         <li>Tap a spot below.</li>
         <li>Click around it on the picture, corner by corner. Click the <b>first point again</b> to close the outline.</li>
         <li>Restrooms are pins: tap <b>Restroom</b>, then click each spot (one at a time).</li>
+        <li>Check-in, the entrance and the conference room are dots: drag a dot to move it (or tap its row and click the spot).</li>
         <li>To fix one: use the ✎ edit tool on the map's left (drag corners), the ✥ move tool, or 🗑 to delete.</li>
+        <li>To move the names on the map, press <b>Place the names</b> (below) and drag them.</li>
         <li>Zoom the picture to how the schedule map should open and press <b>Use this view</b>.</li>
         <li>Press <b>Copy for Claude</b> and paste it in the chat.</li>
       </ol>
@@ -57,6 +63,12 @@
     <div id="items"></div>
     <div class="row"><input id="new-name" placeholder="Another spot, e.g. Check-in"><button class="btn ghost" id="add-btn" type="button">+ Add</button></div>
 
+    <div class="sec">
+      <h2>Place the names</h2>
+      <p class="how" style="margin:0 0 8px">Shows each name where it sits on the schedule map now. Drag a name to where you want it — it can sit on its outline or beside it.</p>
+      <div class="row"><button class="btn ghost" id="names-btn" type="button">Place the names</button><button class="btn ghost" id="names-reset" type="button" style="font-size:12px">Put them back</button></div>
+      <p class="msg" id="names-msg"></p>
+    </div>
     <div class="sec">
       <h2>The schedule map opens at…</h2>
       <button class="btn ghost" id="view-btn" type="button">Use this view</button>
@@ -87,14 +99,21 @@
     { id: "greenhouse1", name: "Greenhouse 1",                          kind: "area",   color: "#74c0fc" },
     { id: "dock",        name: "Loading dock",                          kind: "area",   color: "#be4bdb" },
     { id: "trial",       name: "Trial garden",                          kind: "area",   color: "#51cf66" },
-    { id: "office",      name: "Main office (conference room)",         kind: "area",   color: "#ffffff" },
     { id: "parking",     name: "Parking",                               kind: "area",   color: "#4dabf7" },
     { id: "wc",          name: "Restroom",                              kind: "marker", color: "#0f766e" },
+    // dots: one spot each, placed with a click and dragged to fix
+    { id: "checkin",     name: "Check-in",                              kind: "dot",    color: "#e03131" },
+    { id: "entrance",    name: "Farm entrance",                         kind: "dot",    color: "#1c2b21" },
+    { id: "conference",  name: "Conference room (over the main office)", kind: "dot",   color: "#ffffff" },
   ];
+  // spots that were outlines before 09-30 and are dots now
+  const OLD_OUTLINES = ["x-check-in", "x-entrance", "office"];
   const EXTRA_COLORS = ["#ff8787", "#ffd43b", "#63e6be", "#b197fc", "#ffa94d"];
   const KEY = "synrg26.trace.v1";
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null } catch (e) { return null } };
   let S = load() || { view: null, areas: {}, markers: { wc: [] }, custom: [] };
+  S.custom = (S.custom || []).filter(c => !OLD_OUTLINES.includes(c.id));
+  OLD_OUTLINES.forEach(k => delete (S.areas || {})[k]);
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch (e) {} };
   const items = () => BASE.concat(S.custom.map((c, i) => ({ id: c.id, name: c.name, kind: "area", color: EXTRA_COLORS[i % EXTRA_COLORS.length] })));
   const byId = (id) => items().find(x => x.id === id);
@@ -133,6 +152,19 @@
     m.on("pm:dragend pm:edit", sync);
     m.on("pm:remove", () => { wcLayers = wcLayers.filter(x => x !== m); sync() });
   }
+  const dotLayers = {};
+  function addDot(id, pt) {
+    const it = byId(id); if (!it) return;
+    if (dotLayers[id]) map.removeLayer(dotLayers[id]);
+    const ring = it.color === "#ffffff" ? "#1c2b21" : "#fff";
+    const m = L.marker(pt, { draggable: true, keyboard: false, pmIgnore: true,
+      icon: L.divIcon({ className: "", iconSize: [22, 22], iconAnchor: [11, 11], html: '<span class="tdot" style="background:' + it.color + ';border-color:' + ring + '"></span>' }) }).addTo(map);
+    m.bindTooltip(it.name, { direction: "top", offset: [0, -10] });
+    m.on("dragend", () => { const p = m.getLatLng(); S.dots[id] = [+p.lat.toFixed(7), +p.lng.toFixed(7)]; save(); renderItems() });
+    dotLayers[id] = m;
+  }
+  S.dots = S.dots || {};
+  for (const [id, pt] of Object.entries(S.dots)) addDot(id, pt);
   for (const [id, pts] of Object.entries(S.areas)) addArea(id, pts);
   (S.markers.wc || []).forEach(addWc);
 
@@ -140,13 +172,17 @@
     map.pm.disableDraw();
     active = it;
     renderItems();
-    if (it.kind === "marker") map.pm.enableDraw("CircleMarker", { continueDrawing: false, templineStyle: {}, pathOptions: { radius: 9, color: "#fff", weight: 3, fillColor: "#0f766e", fillOpacity: 1 } });
+    if (it.kind === "dot") map.pm.enableDraw("CircleMarker", { continueDrawing: false, templineStyle: {}, pathOptions: { radius: 8, color: "#fff", weight: 3, fillColor: it.color, fillOpacity: 1 } });
+    else if (it.kind === "marker") map.pm.enableDraw("CircleMarker", { continueDrawing: false, templineStyle: {}, pathOptions: { radius: 9, color: "#fff", weight: 3, fillColor: "#0f766e", fillOpacity: 1 } });
     else map.pm.enableDraw("Polygon", { finishOn: null, pathOptions: { color: it.color, fillColor: it.color, fillOpacity: .18, weight: 3 } });
   }
   map.on("pm:create", (e) => {
     const it = active; active = null;
     if (!it) { map.removeLayer(e.layer); return }
-    if (it.kind === "marker") {
+    if (it.kind === "dot") {
+      const p = e.layer.getLatLng(); map.removeLayer(e.layer);
+      S.dots[it.id] = [+p.lat.toFixed(7), +p.lng.toFixed(7)]; addDot(it.id, S.dots[it.id]);
+    } else if (it.kind === "marker") {
       const p = e.layer.getLatLng(); map.removeLayer(e.layer);
       S.markers.wc = (S.markers.wc || []).concat([[+p.lat.toFixed(7), +p.lng.toFixed(7)]]); addWc([p.lat, p.lng]);
     } else {
@@ -158,10 +194,10 @@
 
   function renderItems() {
     document.getElementById("items").innerHTML = items().map(it => {
-      const done = it.kind === "marker" ? (S.markers.wc || []).length : !!S.areas[it.id];
-      const st = it.kind === "marker" ? (done ? done + " placed" : "none yet") : (done ? "✓ outlined" : "not yet");
+      const done = it.kind === "marker" ? (S.markers.wc || []).length : it.kind === "dot" ? !!S.dots[it.id] : !!S.areas[it.id];
+      const st = it.kind === "marker" ? (done ? done + " placed" : "none yet") : it.kind === "dot" ? (done ? "✓ placed — drag to move" : "not yet") : (done ? "✓ outlined" : "not yet");
       return '<button type="button" class="item' + (done ? " done" : "") + (active && active.id === it.id ? " active" : "") + '" data-id="' + it.id + '">' +
-        '<span class="sw" style="background:' + it.color + ';border:1px solid #0003"></span>' + it.name + '<span class="st">' + (active && active.id === it.id ? "drawing…" : st) + '</span></button>';
+        '<span class="sw" style="background:' + it.color + ';border:1px solid #0003' + (it.kind === "dot" ? ';border-radius:50%' : '') + '"></span>' + it.name + '<span class="st">' + (active && active.id === it.id ? "drawing…" : st) + '</span></button>';
     }).join("");
     document.querySelectorAll(".item").forEach(b => b.onclick = () => start(byId(b.dataset.id)));
     document.getElementById("view-msg").textContent = S.view ? "Saved: zoom " + S.view.zoom + " around " + S.view.center.map(v => v.toFixed(5)).join(", ") : "Not set yet — the schedule will fit all the outlines.";
@@ -180,6 +216,55 @@
       bounds: [[+b.getSouth().toFixed(6), +b.getWest().toFixed(6)], [+b.getNorth().toFixed(6), +b.getEast().toFixed(6)]] };
     save(); renderItems();
   };
+  /* ── placing the names ───────────────────────────────────────────────
+     Every name the schedule map shows, starting where it sits there now:
+     read from the live schedule page's CONFIG (so this page never drifts
+     from it), then S.labels wins once a name has been dragged. */
+  let CFG = null, nameMarkers = [];
+  fetch("index.html", { cache: "no-store" }).then(r => r.text()).then(t => {
+    const i = t.indexOf("const CONFIG = "), j = t.indexOf("/* ====================== END OF THE EDITABLE BLOCK", i);
+    if (i < 0 || j < 0) return;
+    CFG = new Function("return (" + t.slice(i + 15, j).trim().replace(/;\s*$/, "") + ")")();
+    for (const [id, pt] of Object.entries(CFG.map.dots || {})) if (!S.dots[id]) { S.dots[id] = pt; addDot(id, pt); }
+    save(); renderItems();
+  }).catch(() => {});
+  const mid = (pts) => [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length];
+  function nameList() {
+    if (!CFG) return [];
+    const out = [];
+    for (const p of Object.values(CFG.places)) if (p.onSite && (p.area || p.dot)) out.push({ area: p.area || p.dot, dot: !!p.dot, text: (p.map || p.name).en || p.map || p.name, color: p.color, at: p.labelAt });
+    for (const x of CFG.mapExtras || []) if ((x.area || x.dot) && (x.map || x.label)) out.push({ area: x.area || x.dot, dot: !!x.dot, text: (x.map || x.label).en || x.map || x.label, color: x.color, at: x.labelAt });
+    return out.map(n => {
+      const d = n.dot && S.dots[n.area];
+      const pts = d ? [[d[0] + 0.00005, d[1]]] : S.areas[n.area] || CFG.map.areas[n.area];
+      const placed = (S.labels || {})[n.area] || (CFG.map.labels || {})[n.area];
+      return pts ? Object.assign(n, { pos: placed || n.at || mid(pts) }) : null;
+    }).filter(Boolean);
+  }
+  function showNames() {
+    nameMarkers.forEach(m => map.removeLayer(m)); nameMarkers = [];
+    const list = nameList();
+    const msg = document.getElementById("names-msg");
+    if (!list.length) { msg.textContent = CFG ? "No outlined spots to name yet." : "Could not read the schedule page — try again in a moment."; return false; }
+    for (const n of list) {
+      const m = L.marker(n.pos, { draggable: true, keyboard: false, pmIgnore: true,
+        icon: L.divIcon({ className: "", iconSize: null, html: '<span class="namepin" style="border-left-color:' + n.color + '">' + n.text.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])) + "</span>" }) }).addTo(map);
+      m.on("dragend", () => { const p = m.getLatLng(); S.labels = S.labels || {}; S.labels[n.area] = [+p.lat.toFixed(6), +p.lng.toFixed(6)]; save(); msg.textContent = "Saved — " + Object.keys(S.labels).length + " name(s) moved."; });
+      nameMarkers.push(m);
+    }
+    msg.textContent = "Drag the names. " + (Object.keys(S.labels || {}).length ? Object.keys(S.labels).length + " moved so far." : "");
+    return true;
+  }
+  document.getElementById("names-btn").onclick = () => {
+    const btn = document.getElementById("names-btn");
+    if (nameMarkers.length) { nameMarkers.forEach(m => map.removeLayer(m)); nameMarkers = []; btn.textContent = "Place the names"; return; }
+    if (showNames()) btn.textContent = "Done placing names";
+  };
+  document.getElementById("names-reset").onclick = () => {
+    if (!confirm("Put every name back where the schedule map has it now?")) return;
+    S.labels = {}; save(); if (nameMarkers.length) showNames(); else document.getElementById("names-msg").textContent = "Names put back.";
+  };
+
   const payload = () => "SYNRG-MAP " + JSON.stringify(S);
   document.getElementById("copy-btn").onclick = async () => {
     const msg = document.getElementById("copy-msg");
