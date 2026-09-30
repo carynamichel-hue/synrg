@@ -154,31 +154,25 @@ const CONFIG = {
   ],
 
   // ---- WORKING GROUPS (Wednesday) ----------------------------------------
-  // Rooms are place ids. Themes come from the agendas the leaders were sent;
-  // blank a theme ("") if a leader changes it and you do not want to guess.
+  // Rooms are place ids. agenda = the lines shown in the group's "Agenda"
+  // drop-down, one per item, e.g.
+  //   agenda: { en: ["8:00  Welcome", "8:10  PGR talk"], es: ["8:00  Bienvenida", "8:10  Charla de PGR"] },
+  // null = the drop-down says the agenda is coming soon.
   groups: [
     { name: { en: "Grower (Perennials + Woodies)", es: "Productores (perennes + leñosas)" }, s1: "barn", s2: "barn",
-      t1: { en: "Growing the crop: PGRs, timing and problem plants (PGR talk together with Plant Health)", es: "Producir el cultivo: PGR, tiempos y plantas problema (charla de PGR junto con Sanidad Vegetal)" },
-      t2: { en: "Water, nutrition and weather", es: "Agua, nutrición y clima" } },
+      agenda: null },
     { name: { en: "Plant Health", es: "Sanidad Vegetal" }, s1: "barn", s2: "barn",
-      t1: { en: "Chemicals: what’s working (PGR talk together with Grower)", es: "Químicos: qué funciona (charla de PGR junto con Productores)" },
-      t2: { en: "From forecast to sprayer: planning and logistics", es: "Del pronóstico a la aspersora: planificación y logística" } },
+      agenda: null },
     { name: { en: "Propagation", es: "Propagación" }, s1: "headhouse", s2: "headhouse",
-      t1: { en: "From cutting to rooted liner", es: "Del esqueje a la planta enraizada" },
-      t2: { en: "Timing and troubleshooting problem crops", es: "Tiempos y cultivos problema" } },
+      agenda: null },
     { name: { en: "Shipping", es: "Envíos" }, s1: "dock", s2: "dock",
-      t1: { en: "On the dock: process and productivity", es: "En el muelle: proceso y productividad" },
-      t2: { en: "Out the door: freight, loads and routes", es: "La salida: fletes, cargas y rutas" } },
+      agenda: null },
     { name: { en: "Lean Management", es: "Gestión Lean" }, s1: "dock", s2: "dock",
-      note: { en: "separate area near Shipping", es: "área aparte cerca de Envíos" },
-      t1: { en: "Gemba walk on the dock", es: "Recorrido gemba en el muelle" },
-      t2: { en: "People, suppliers, and one problem solved", es: "Personas, proveedores y un problema resuelto" } },
+      agenda: null },
     { name: { en: "Trialing", es: "Pruebas de plantas" }, s1: "trial", s2: "trial",
-      t1: { en: "In the garden: what’s performing", es: "En el jardín: qué está funcionando" },
-      t2: { en: "Running a trial program", es: "Cómo llevar un programa de pruebas" } },
+      agenda: null },
     { name: { en: "Marketing", es: "Mercadeo" }, s1: "conference", s2: "conference",
-      t1: { en: "Off-season engagement", es: "Participación fuera de temporada" },
-      t2: { en: "Sales support and the tools behind it", es: "Apoyo a ventas y sus herramientas" } },
+      agenda: null },
   ],
 
   // ---- GOOD TO KNOW -------------------------------------------------------
@@ -218,14 +212,14 @@ const CONFIG = {
     // where each name sits, if placed on trace.html ("Place the names"); a spot
     // missing here uses its labelAt / the middle of its outline
     labels: {
-      barn: [39.434138,-75.313168],
-      checkin: [39.43437,-75.312309],
-      trial: [39.43292,-75.311075],
+      barn: [39.433993,-75.312282],
+      checkin: [39.43403,-75.311086],
+      trial: [39.433177,-75.311365],
       headhouse: [39.432725,-75.312679],
       greenhouse1: [39.432369,-75.31298],
       dock: [39.432031,-75.311499],
-      conference: [39.433152,-75.311108],
-      parking: [39.433641,-75.311628],
+      conference: [39.433782,-75.311065],
+      parking: [39.433583,-75.311601],
       entrance: [39.435588,-75.308501],
     },
   },
@@ -349,6 +343,13 @@ const CONFIG = {
   .grp .room{font-weight:700;color:var(--g-deep)}
   .grp .room a{color:inherit}
   .grp .theme{color:var(--slate);font-size:14.5px}
+  .grp .agenda{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+  .grp .agenda summary{cursor:pointer;font-weight:700;color:var(--g-deep);font-size:15px;padding:6px 0;min-height:32px;display:flex;align-items:center}
+  .grp .agenda summary::-webkit-details-marker{display:none}
+  .grp .agenda summary::before{content:"▸";display:inline-block;width:1.1em;transition:transform .15s}
+  .grp .agenda[open] summary::before{transform:rotate(90deg)}
+  .grp .agenda p{margin:2px 0 4px}
+  .grp .agenda ul{margin:4px 0 4px;padding-left:18px;font-size:15px;line-height:1.45}
 
   /* map */
   .map-section{padding-top:30px}
@@ -487,14 +488,14 @@ const CONFIG = {
   const UI = {
     en: { lang: "Español", now: "Right now", jump: "Jump to now", groups: "Working groups",
           groupsSub: "Wednesday, October 7 · Session 1 8:00–9:30 · Session 2 10:30–12:00",
-          s1: "Session 1", s2: "Session 2", both: "Both sessions", map: "Map of Overdevest", info: "Good to know",
+          s1: "Session 1", s2: "Session 2", both: "Both sessions", agenda: "Agenda", agendaSoon: "Agenda coming soon.", map: "Map of Overdevest", info: "Good to know",
           provided: "🚌 Ride provided", own: "🚗 On your own", web: "Website", onMap: "On the map", seeGroups: "See the working groups",
           before: "Starts", notStarted: "Not started yet", firstUp: "First up", wrap: "That’s a wrap", thanks: "Thanks for coming — safe travels!",
           between: "Between sessions", free: "Free time", next: "Next", left: "left", nowB: "Now", nextB: "Next", call: "Call",
           add: "Add", hr: "hr", min: "min", overnight: "See you tomorrow", tomorrow: "Tomorrow" },
     es: { lang: "English", now: "Ahora", jump: "Ir a ahora", groups: "Grupos de trabajo",
           groupsSub: "Miércoles 7 de octubre · Sesión 1 8:00–9:30 · Sesión 2 10:30–12:00",
-          s1: "Sesión 1", s2: "Sesión 2", both: "Ambas sesiones", map: "Mapa de Overdevest", info: "Bueno saber",
+          s1: "Sesión 1", s2: "Sesión 2", both: "Ambas sesiones", agenda: "Agenda", agendaSoon: "Agenda próximamente.", map: "Mapa de Overdevest", info: "Bueno saber",
           provided: "🚌 Transporte incluido", own: "🚗 Por su cuenta", web: "Sitio web", onMap: "En el mapa", seeGroups: "Ver los grupos de trabajo",
           before: "Empieza", notStarted: "Todavía no empieza", firstUp: "Primero", wrap: "¡Eso es todo!", thanks: "Gracias por venir — ¡buen viaje!",
           between: "Entre sesiones", free: "Tiempo libre", next: "Siguiente", left: "restantes", nowB: "Ahora", nextB: "Sigue", call: "Llamar",
@@ -581,8 +582,10 @@ const CONFIG = {
       let h = '<div class="grp"><h3>' + esc(L(g.name)) + '</h3>';
       h += '<div class="row"><span class="lbl">' + esc(same ? u("both") : u("s1")) + '</span><span class="room">📍 ' + room(g.s1) + (g.note ? ' <span class="theme">(' + esc(L(g.note)) + ')</span>' : '') + '</span></div>';
       if (!same) h += '<div class="row"><span class="lbl">' + esc(u("s2")) + '</span><span class="room">📍 ' + room(g.s2) + '</span></div>';
-      if (L(g.t1)) h += '<div class="row"><span class="lbl">' + esc(u("s1")) + '</span><span class="theme">' + esc(L(g.t1)) + '</span></div>';
-      if (L(g.t2)) h += '<div class="row"><span class="lbl">' + esc(u("s2")) + '</span><span class="theme">' + esc(L(g.t2)) + '</span></div>';
+      const items = g.agenda ? (g.agenda[lang] || g.agenda.en || []) : [];
+      h += '<details class="agenda"><summary>' + esc(u("agenda")) + '</summary>' + (items.length
+        ? '<ul>' + items.map(t => '<li>' + esc(t) + '</li>').join("") + '</ul>'
+        : '<p class="theme">' + esc(u("agendaSoon")) + '</p>') + '</details>';
       return h + '</div>';
     }).join("");
 
