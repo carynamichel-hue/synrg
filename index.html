@@ -7,6 +7,8 @@
 <meta name="theme-color" content="#1c2b21">
 <meta name="description" content="Schedule, rides and map for SynRG '26 at Overdevest Nurseries, October 6-8, 2026.">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<script src="vendor/leaflet/leaflet.js"></script>
 
 <script>
 /* ==========================================================================
@@ -38,14 +40,16 @@ const CONFIG = {
   // Every "where" on the schedule points at one of these by its id.
   // onSite: true  = at Overdevest (shown on the map when it is drawn)
   // url           = a web page to link to (off-site stops)
-  // n             = the number on the map (the pin positions are in siteMapSVG
-  //                 at the bottom of this file — change a number there too)
+  // n             = the number on the map
+  // area          = the outline traced on trace.html (a key of map.areas below)
+  // color         = the outline's colour on the map
   places: {
-    barn:       { n: 1, onSite: true,  name: { en: "Tractor barn",    es: "Granero de tractores" } },
-    headhouse:  { n: 2, onSite: true,  name: { en: "Headhouse (entrance to Greenhouse 1)", es: "Headhouse (entrada al Invernadero 1)" } },
-    dock:       { n: 3, onSite: true,  name: { en: "Loading dock",    es: "Muelle de carga" } },
-    trial:      { n: 4, onSite: true,  name: { en: "Trial garden (around the main office)", es: "Jardín de pruebas (alrededor de la oficina principal)" } },
-    conference: { n: 5, onSite: true,  name: { en: "Conference room (in the main office)", es: "Sala de conferencias (en la oficina principal)" } },
+    checkin:    { n: 1, onSite: true, area: "x-check-in", color: "#e03131", name: { en: "Check-in", es: "Registro" } },
+    barn:       { n: 2, onSite: true, area: "barn",       color: "#f2b33d", name: { en: "Tractor barn", es: "Granero de tractores" } },
+    headhouse:  { n: 3, onSite: true, area: "headhouse",  color: "#fd7e14", name: { en: "Headhouse (entrance to Greenhouse 1)", es: "Headhouse (entrada al Invernadero 1)" } },
+    dock:       { n: 4, onSite: true, area: "dock",       color: "#cc5de8", name: { en: "Loading dock", es: "Muelle de carga" } },
+    trial:      { n: 5, onSite: true, area: "trial",      color: "#51cf66", name: { en: "Trial garden (around the main office)", es: "Jardín de pruebas (alrededor de la oficina principal)" } },
+    conference: { n: 6, onSite: true, area: "office",     color: "#ffffff", name: { en: "Conference room (in the main office)", es: "Sala de conferencias (en la oficina principal)" } },
     hotel:      { onSite: false, name: "Fairfield Inn & Suites", url: "" },
     lucas:      { onSite: false, name: "Lucas Greenhouses", url: "https://www.lucasgreenhouses.com/" },
     brewery:    { onSite: false, name: "Farmers & Bankers Brewing", url: "https://farmersandbankersbrewing.com/" },
@@ -65,7 +69,7 @@ const CONFIG = {
       label: { en: "Tuesday, October 6", es: "Martes 6 de octubre" },
       short: { en: "Tue", es: "Mar" },
       blocks: [
-        { start: "14:00", end: "14:15", where: "", ride: "own",
+        { start: "14:00", end: "14:15", where: "checkin", ride: "own",
           title: { en: "Arrival and welcome", es: "Llegada y bienvenida" },
           details: { en: "Make your own way to Overdevest Nurseries.", es: "Llegue por su cuenta a Overdevest Nurseries." } },
         { start: "14:15", end: "17:00", where: "",
@@ -188,13 +192,35 @@ const CONFIG = {
   ],
 
   // ---- MAP ----------------------------------------------------------------
-  // Off until the layout is drawn. Turning it on shows the drawing in
-  // siteMapSVG() at the bottom of this file with the numbered places above.
+  // The satellite picture with the spots outlined. The shapes were traced by
+  // Caryn on trace.html (09-30): to redraw, trace again, press "Copy for
+  // Claude" and replace view / areas / wc below with what it copied.
+  // view null = open framed to fit every outline.
   showMap: true,
-  // Map-only markers (not schedule places): shown in the legend under the map.
+  map: {
+    view: null,
+    areas: {
+      barn: [[39.4342084,-75.3118962],[39.4340178,-75.3116924],[39.4337319,-75.3121698],[39.4339225,-75.3123844]],
+      headhouse: [[39.4328536,-75.3127599],[39.4327293,-75.3129798],[39.4322652,-75.3125238],[39.4323771,-75.3123146]],
+      office: [[39.4331892,-75.3113705],[39.4331726,-75.3113276],[39.4331519,-75.3112417],[39.433185,-75.3111774],[39.4332348,-75.3111613],[39.433272,-75.3110594],[39.4333176,-75.3109467],[39.4334253,-75.3110647],[39.4333549,-75.3112417],[39.4333052,-75.3112686],[39.4333093,-75.3113222],[39.4332679,-75.3113866]],
+      parking: [[39.4338024,-75.3115046],[39.4336408,-75.3113329],[39.4334088,-75.3116977],[39.4335704,-75.3118372]],
+      trial: [[39.4334005,-75.3116655],[39.4328909,-75.3112525],[39.433272,-75.3105712],[39.4339018,-75.3112042],[39.4338107,-75.3114617],[39.4336284,-75.3112954]],
+      dock: [[39.4325387,-75.3112096],[39.4321119,-75.310775],[39.4315236,-75.3117782],[39.4319462,-75.3122073]],
+      greenhouse1: [[39.432866,-75.3127599],[39.4323357,-75.3136933],[39.4318923,-75.3132051],[39.4323978,-75.3123254],[39.432837,-75.3127223]],
+      "x-entrance": [[39.4357538,-75.308286],[39.4356875,-75.3082108],[39.4357621,-75.308404]],
+      "x-check-in": [[39.4339256,-75.3117996],[39.4339122,-75.3117876],[39.433907,-75.311805],[39.4339111,-75.3118184]],
+    },
+    wc: [[39.4340551,-75.3116494],[39.4337278,-75.3122556],[39.432576,-75.3111345]],
+  },
+  // On the map but not schedule places: shown on the picture and in the legend.
+  // area = an outline above; pin true = shown as a marker at its middle.
   mapExtras: [
-    { sym: "P",  name: { en: "Parking — across from the tractor barn", es: "Estacionamiento — frente al granero de tractores" } },
-    { sym: "WC", name: { en: "Portable restrooms — both ends of the tractor barn and by the loading dock", es: "Baños portátiles — a ambos lados del granero y junto al muelle de carga" } },
+    { sym: "P",  area: "parking", color: "#339af0", name: { en: "Parking — across from the tractor barn", es: "Estacionamiento — frente al granero de tractores" } },
+    { sym: "WC", markers: "wc",   color: "#0f766e", name: { en: "Portable restrooms", es: "Baños portátiles" } },
+    // pin: a marker, and the map does not zoom out to include it when it opens
+    { sym: "➜",  area: "x-entrance", pin: true, color: "#1c2b21", name: { en: "Farm entrance (off the main road)", es: "Entrada del vivero (desde la carretera)" } },
+    // labelAt: where the name sits — on the far side from the headhouse, so it never covers pin 3
+    { sym: "",   area: "greenhouse1", color: "#74c0fc", labelAt: [39.43226, -75.31322], label: { en: "Greenhouse 1", es: "Invernadero 1" } },
   ],
 };
 
@@ -309,13 +335,25 @@ const CONFIG = {
   /* map */
   .map-section{padding-top:30px}
   .map-frame{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:var(--shadow)}
-  .map-frame svg{width:100%;height:auto;display:block}
+  #sitemap{height:540px;border-radius:6px;background:#dfe6dc}
+  /* Chrome leaves hairline gaps between tiles at in-between zoom levels; this
+     blend hides most of them (overlapping tiles by a pixel made it WORSE —
+     bright white seams — tried 09-30) */
+  #sitemap .leaflet-tile{mix-blend-mode:plus-lighter}
+  .map-note{font-size:13px;color:var(--slate);margin:8px 2px 0}
+  .pinb{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:2.5px solid #fff;font-weight:800;font-size:13px;color:#1c2b21;
+        box-shadow:0 1px 4px rgba(0,0,0,.45);font-family:var(--body)}
+  .pinb.sq{border-radius:7px}
+  .pinb.wc{width:28px;height:19px;border-radius:5px;font-size:9.5px}
+  .maplbl{background:rgba(28,43,33,.8);color:#fff;border:0;border-radius:4px;font-weight:600;font-size:12px;padding:1px 6px;box-shadow:none}
+  .maplbl::before{display:none}
+  .flash{animation:flash 1.2s ease-in-out 2}
+  @keyframes flash{50%{stroke-width:8px;fill-opacity:.55}}
   .legend{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:1fr;gap:7px;font-size:15px}
   .legend li{display:flex;gap:8px;align-items:center;scroll-margin-top:80px}
-  .legend .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--g);color:#fff;font-weight:700;font-size:13px;display:grid;place-items:center}
+  .legend .num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--g);color:#1c2b21;font-weight:800;font-size:13px;display:grid;place-items:center;border:2px solid rgba(0,0,0,.25)}
+  .legend li{cursor:pointer}
   .legend li:target{background:var(--amber-soft);border-radius:6px}
-  .legend .num.sym-P{background:#2d5d8a;border-radius:5px}
-  .legend .num.sym-WC{background:#0f766e;border-radius:5px;font-size:10px}
 
   /* good to know */
   .info{padding-top:30px;padding-bottom:20px}
@@ -397,7 +435,8 @@ const CONFIG = {
 
   <section class="map-section wrap" id="map-section" hidden>
     <h2 id="lbl-map">Map of Overdevest</h2>
-    <div class="map-frame" id="map-frame"></div>
+    <div class="map-frame"><div id="sitemap" role="img" aria-label="Satellite map of Overdevest Nurseries with the event spots outlined"></div></div>
+    <p class="map-note" id="map-note"></p>
     <ul class="legend" id="legend"></ul>
   </section>
 
@@ -526,10 +565,13 @@ const CONFIG = {
 
     if (C.showMap){
       $("#map-section").hidden = false;
-      $("#map-frame").innerHTML = siteMapSVG();
-      $("#legend").innerHTML = Object.entries(C.places).filter(([, p]) => p.onSite).sort((a, b) => a[1].n - b[1].n)
-        .map(([id, p]) => '<li id="place-' + id + '"><span class="num">' + p.n + '</span>' + esc(L(p.name)) + '</li>').join("")
-        + (C.mapExtras || []).map(x => '<li><span class="num sym-' + esc(x.sym) + '">' + esc(x.sym) + '</span>' + esc(L(x.name)) + '</li>').join("");
+      drawMap();
+      const places = Object.entries(C.places).filter(([, p]) => p.onSite).sort((a, b) => a[1].n - b[1].n);
+      $("#legend").innerHTML = places.map(([id, p]) => '<li id="place-' + id + '" data-area="' + esc(p.area || "") + '"><span class="num" style="background:' + esc(p.color) + ';color:' + inkOn(p.color) + '">' + p.n + '</span>' + esc(L(p.name)) + '</li>').join("")
+        + (C.mapExtras || []).filter(x => x.name).map(x => '<li data-area="' + esc(x.area || "") + '"><span class="num" style="background:' + esc(x.color) + ';color:#fff;border-radius:6px;font-size:' + (x.sym.length > 1 ? 10 : 13) + 'px">' + esc(x.sym) + '</span>' + esc(L(x.name)) + '</li>').join("");
+      document.querySelectorAll("#legend li[data-area]").forEach(li => { if (li.dataset.area) li.onclick = () => focusArea(li.dataset.area); });
+      $("#map-note").textContent = lang === "es" ? "Toque un lugar de la lista para verlo en el mapa. El mapa satelital necesita señal." : "Tap a spot in the list to find it on the map. The satellite picture needs a signal.";
+      relabel();
     }
 
     $("#info-list").innerHTML = (C.goodToKnow || []).map(t => {
@@ -591,6 +633,7 @@ const CONFIG = {
     return (sameDay ? "" : L(C.days[b.di].short) + " ") + fmt(b.startAt);
   }
 
+  window.addEventListener("hashchange", () => { const id = location.hash.replace("#place-", ""); if (C.places[id] && C.places[id].area) setTimeout(() => focusArea(C.places[id].area), 300); });
   $("#lang-btn").addEventListener("click", () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem(KEY, lang); } catch (e) {} render(); });
   $("#jump-btn").addEventListener("click", () => {
     const s = state(new Date()); const target = s.current || s.next || all[all.length - 1];
@@ -604,74 +647,66 @@ const CONFIG = {
 })();
 
 /* --------------------------------------------------------------------------
-   The Overdevest map — a simple schematic traced from satellite imagery (the
-   Pesticide app's wind-map tiles, Esri World Imagery, zoom 18). Coordinates are
-   the pixels of that picture (~0.46 m each), so north is up and the buildings
-   keep their real angle. Spots named by Caryn 09-30:
-     1 tractor barn (the long white building) · P parking pad across from it
-     2 headhouse = the entrance to Greenhouse 1 · 3 loading dock
-     4 trial garden around the main office · 5 conference room in the office
-     WC portable restrooms at both ends of the barn and by the dock
-   Pin numbers must match CONFIG.places[…].n.
+   The Overdevest map — the satellite picture (Esri World Imagery, the same
+   tiles as the Pesticide app's wind map) with Caryn's traced outlines on top,
+   each numbered like the legend. On a phone the map does not drag, so a thumb
+   scrolling the page is never caught by it; the + / − buttons zoom and the
+   legend jumps to a spot. Drawn once; labels follow the language switch.
    -------------------------------------------------------------------------- */
-function siteMapSVG(){
-  const pin = (x, y, n) => `<g><circle cx="${x}" cy="${y}" r="19" fill="#2f6b3a" stroke="#fff" stroke-width="4"/><text x="${x}" y="${y + 8}" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">${n}</text></g>`;
-  const wc = (x, y) => `<g><rect x="${x - 17}" y="${y - 13}" width="34" height="26" rx="6" fill="#0f766e" stroke="#fff" stroke-width="3"/><text x="${x}" y="${y + 6}" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">WC</text></g>`;
-  const label = (x, y, t, size) => `<text x="${x}" y="${y}" text-anchor="middle" font-size="${size || 19}" font-weight="600" fill="#1c2b21" stroke="#f3f6f1" stroke-width="5" paint-order="stroke">${t}</text>`;
-  return `
-<svg viewBox="250 -55 740 700" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of Overdevest Nurseries: tractor barn, headhouse and Greenhouse 1, loading dock, trial garden and main office, parking and restrooms" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
-  <defs>
-    <pattern id="rows" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(52)"><rect width="14" height="14" fill="#e3ecdf"/><rect width="6" height="14" fill="#d3e0cd"/></pattern>
-    <pattern id="glass" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(52)"><rect width="12" height="12" fill="#dde9ef"/><rect width="2" height="12" fill="#c3d6e0"/></pattern>
-  </defs>
-  <rect x="250" y="-55" width="740" height="700" fill="#eef3ea"/>
-
-  <!-- growing areas, for context only -->
-  <polygon points="250,-55 560,-55 430,40 250,170" fill="url(#rows)"/>
-  <polygon points="860,-55 990,-55 990,330 900,390 830,250" fill="url(#rows)"/>
-  <polygon points="870,520 990,430 990,645 700,645" fill="url(#rows)"/>
-  ${label(330, 40, "Growing area", 16)}${label(930, 120, "Growing area", 16)}
-
-  <!-- drives -->
-  <g stroke="#d4d9d1" stroke-width="30" stroke-linecap="round" fill="none">
-    <path d="M250 420 L800 20"/>
-    <path d="M440 268 L760 23"/>
-    <path d="M640 685 L1000 405"/>
-    <path d="M660 -40 L745 120 L890 500"/>
-  </g>
-
-  <!-- parking pad -->
-  <polygon points="557,27 642,-33 694,34 604,89" fill="#eadcb8" stroke="#c9b27e" stroke-width="2"/>
-  <g><rect x="604" y="11" width="34" height="34" rx="6" fill="#2d5d8a" stroke="#fff" stroke-width="3"/><text x="621" y="36" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">P</text></g>
-
-  <!-- 1 tractor barn -->
-  <polygon points="588,192 622,166 718,292 686,318" fill="#ffffff" stroke="#6b7a70" stroke-width="3"/>
-  ${label(548, 282, "Tractor barn")}
-
-  <!-- trial garden + main office -->
-  <polygon points="716,135 795,45 880,150 780,245" fill="#bfe0b6" stroke="#6fa865" stroke-width="2"/>
-  <polygon points="758,190 800,160 822,195 780,222" fill="#ffffff" stroke="#6b7a70" stroke-width="3"/>
-  ${label(800, 40, "Main office")}
-
-  <!-- Greenhouse 1, entered through the headhouse -->
-  <polygon points="320,405 478,290 568,405 412,518" fill="url(#glass)" stroke="#7d98a8" stroke-width="3"/>
-  ${label(440, 420, "Greenhouse 1")}
-
-  <!-- 3 loading dock -->
-  <polygon points="598,505 775,378 850,470 705,580" fill="#ecebe6" stroke="#8d8a80" stroke-width="3"/>
-  ${label(728, 525, "Loading dock")}
-
-  <!-- restrooms -->
-  ${wc(572, 170)}${wc(733, 322)}${wc(585, 540)}
-
-  <!-- numbered pins (match CONFIG.places) -->
-  ${pin(653, 242, 1)}${pin(523, 347, 2)}${pin(740, 470, 3)}${pin(850, 120, 4)}${pin(790, 191, 5)}
-
-  <!-- north + scale (50 m ≈ 108 px at 0.46 m/px) -->
-  <g transform="translate(955,-20)"><path d="M0 -22 L10 8 L0 2 L-10 8 Z" fill="#1c2b21"/><text y="26" text-anchor="middle" font-size="16" font-weight="700" fill="#1c2b21">N</text></g>
-  <g transform="translate(270,618)"><rect width="108" height="6" fill="#1c2b21"/><text x="0" y="-6" font-size="14" fill="#1c2b21">50 m</text></g>
-  <text x="985" y="638" text-anchor="end" font-size="11" fill="#4a5a4f">Traced from imagery © Esri, Maxar, Earthstar Geographics</text>
-</svg>`; }
+// var + function declarations, not let/const: the IIFE above calls drawMap()
+// before this part of the script has run — let/const would still be in their
+// temporal dead zone, and a var's "= {}" has not run yet either, so drawMap
+// sets the starting values itself.
+var _map, _shapes, _labels, _eventBounds;
+// readable text on a coloured badge: white on dark fills, ink on light ones
+function inkOn(c){ const n = parseInt(c.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? "#1c2b21" : "#fff"; }
+function _mid(pts){ const n = pts.length; return [pts.reduce((a, p) => a + p[0], 0) / n, pts.reduce((a, p) => a + p[1], 0) / n]; }
+function drawMap(){
+  if (_map || typeof L === "undefined") { if (typeof L === "undefined") document.getElementById("sitemap").textContent = "Map unavailable offline."; return; }
+  _shapes = {}; _labels = [];
+  const C = CONFIG, M = C.map, touch = matchMedia("(pointer: coarse)").matches;
+  _map = L.map("sitemap", { scrollWheelZoom: false, dragging: !touch, tap: false, zoomSnap: 0.5, maxZoom: 20, attributionControl: true });
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+    attribution: "Imagery © Esri, Maxar, Earthstar Geographics", maxNativeZoom: 19, maxZoom: 20,
+  }).addTo(_map);
+  const badge = (latlng, html, color, cls) => L.marker(latlng, { interactive: false, keyboard: false,
+    icon: L.divIcon({ className: "", html: '<div class="pinb ' + (cls || "") + '" style="background:' + color + ';color:' + inkOn(color) + '">' + html + '</div>', iconSize: [28, 28], iconAnchor: [14, 14] }) }).addTo(_map);
+  const all = [];
+  const outline = (key, color) => {
+    const pts = M.areas[key]; if (!pts) return null;
+    all.push(...pts);
+    const poly = L.polygon(pts, { color: color, weight: 3, fillColor: color, fillOpacity: .22, interactive: false }).addTo(_map);
+    _shapes[key] = poly; return pts;
+  };
+  for (const x of C.mapExtras || []) {
+    if (x.markers) { (M[x.markers] || []).forEach(p => { all.push(p); badge(p, x.sym, x.color, "wc"); }); continue; }
+    const pts = x.pin ? (M.areas[x.area] || null) : outline(x.area, x.color);
+    if (x.pin && pts) { badge(_mid(pts), x.sym, x.color, "sq"); _shapes[x.area] = L.polygon(pts, { opacity: 0, fillOpacity: 0, interactive: false }).addTo(_map); }
+    else if (pts && x.sym) badge(_mid(pts), x.sym, x.color, "sq");
+    if (pts && x.label) _labels.push({ at: x.labelAt || _mid(pts), text: x.label });
+  }
+  for (const p of Object.values(C.places)) {
+    if (!p.onSite || !p.area) continue;
+    const pts = outline(p.area, p.color); if (pts) badge(_mid(pts), p.n, p.color);
+  }
+  _eventBounds = L.latLngBounds(all);
+  if (M.view && M.view.bounds) _map.fitBounds(M.view.bounds); else if (all.length) _map.fitBounds(all, { padding: [14, 14] });
+}
+function relabel(){
+  if (!_map) return;
+  _labels.forEach(l => l.layer && _map.removeLayer(l.layer));
+  _labels.forEach(l => { l.layer = L.tooltip({ permanent: true, direction: "center", className: "maplbl", interactive: false }).setLatLng(l.at).setContent(L_(l.text)).addTo(_map); });
+}
+function L_(v){ const lang = document.documentElement.lang || "en"; return typeof v === "string" ? v : (v[lang] || v.en || ""); }
+function focusArea(key){
+  const shape = _shapes[key]; if (!_map || !shape) return;
+  document.getElementById("map-section").scrollIntoView({ behavior: "smooth", block: "start" });
+  // a pin (the entrance) is shown together with the event area, so people see how the two connect
+  const pinKey = (CONFIG.mapExtras || []).some(x => x.pin && x.area === key);
+  _map.fitBounds(pinKey ? shape.getBounds().extend(_eventBounds) : shape.getBounds(), { maxZoom: 19, padding: [40, 40] });
+  const el = shape.getElement && shape.getElement();
+  if (el) { el.classList.remove("flash"); void el.getBoundingClientRect(); el.classList.add("flash"); }
+}
 </script>
 </body>
 </html>
