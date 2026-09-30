@@ -37,6 +37,7 @@
   .lbl::before{display:none}
   /* a name being placed: looks like the schedule map's label, centred on its point */
   .tdot{display:block;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #0006;cursor:grab}
+  .namepin.clash{box-shadow:0 0 0 3px #e03131}
   .namepin{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;cursor:grab;background:rgba(20,30,24,.86);color:#fff;
            border-left:5px solid #fff;border-radius:4px;font-weight:700;font-size:12.5px;line-height:1.25;padding:3px 7px;box-shadow:0 0 0 2px #f2b33d}
   @media (max-width:800px){.app{grid-template-columns:1fr;grid-template-rows:62vh auto;height:auto}#map{height:62vh}aside{border-left:0;border-top:1px solid var(--line)}}
@@ -65,7 +66,7 @@
 
     <div class="sec">
       <h2>Place the names</h2>
-      <p class="how" style="margin:0 0 8px">Shows each name where it sits on the schedule map now. Drag a name to where you want it — it can sit on its outline or beside it.</p>
+      <p class="how" style="margin:0 0 8px">Shows each name where it sits on the schedule map now, at the size a phone shows them. Drag a name to where you want it — it can sit on its outline or beside it. A name with a <b style="color:#e03131">red ring</b> touches another one.</p>
       <div class="row"><button class="btn ghost" id="names-btn" type="button">Place the names</button><button class="btn ghost" id="names-reset" type="button" style="font-size:12px">Put them back</button></div>
       <p class="msg" id="names-msg"></p>
     </div>
@@ -241,6 +242,21 @@
       return pts ? Object.assign(n, { pos: placed || n.at || mid(pts) }) : null;
     }).filter(Boolean);
   }
+  // the schedule map opens at zoom 17 on a phone: placing at any other zoom
+  // looks roomy here and collides there
+  const PHONE_ZOOM = 17;
+  function markClashes() {
+    const els = nameMarkers.map(m => m.getElement() && m.getElement().querySelector(".namepin")).filter(Boolean);
+    const r = els.map(e => e.getBoundingClientRect());
+    els.forEach(e => e.classList.remove("clash"));
+    let n = 0;
+    for (let i = 0; i < r.length; i++) for (let j = i + 1; j < r.length; j++) {
+      const a = r[i], b = r[j];
+      if (a.left < b.right - 2 && b.left < a.right - 2 && a.top < b.bottom - 2 && b.top < a.bottom - 2) { els[i].classList.add("clash"); els[j].classList.add("clash"); n++ }
+    }
+    return n;
+  }
+  map.on("zoomend", () => { if (nameMarkers.length) markClashes() });
   function showNames() {
     nameMarkers.forEach(m => map.removeLayer(m)); nameMarkers = [];
     const list = nameList();
@@ -249,15 +265,17 @@
     for (const n of list) {
       const m = L.marker(n.pos, { draggable: true, keyboard: false, pmIgnore: true,
         icon: L.divIcon({ className: "", iconSize: null, html: '<span class="namepin" style="border-left-color:' + n.color + '">' + n.text.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])) + "</span>" }) }).addTo(map);
-      m.on("dragend", () => { const p = m.getLatLng(); S.labels = S.labels || {}; S.labels[n.area] = [+p.lat.toFixed(6), +p.lng.toFixed(6)]; save(); msg.textContent = "Saved — " + Object.keys(S.labels).length + " name(s) moved."; });
+      m.on("dragend", () => { const p = m.getLatLng(); S.labels = S.labels || {}; S.labels[n.area] = [+p.lat.toFixed(6), +p.lng.toFixed(6)]; save(); const c = markClashes(); msg.textContent = "Saved — " + Object.keys(S.labels).length + " name(s) moved." + (c ? " " + c + " pair(s) still touch." : ""); });
       nameMarkers.push(m);
     }
     msg.textContent = "Drag the names. " + (Object.keys(S.labels || {}).length ? Object.keys(S.labels).length + " moved so far." : "");
+    markClashes();
     return true;
   }
   document.getElementById("names-btn").onclick = () => {
     const btn = document.getElementById("names-btn");
     if (nameMarkers.length) { nameMarkers.forEach(m => map.removeLayer(m)); nameMarkers = []; btn.textContent = "Place the names"; return; }
+    if (map.getZoom() !== PHONE_ZOOM) map.setZoom(PHONE_ZOOM, { animate: false });
     if (showNames()) btn.textContent = "Done placing names";
   };
   document.getElementById("names-reset").onclick = () => {

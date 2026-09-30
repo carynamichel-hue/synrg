@@ -91,6 +91,8 @@ ok('outlines come back after a reload', (await js('document.querySelectorAll(".l
   await js(`document.getElementById('names-btn').click(); 1`); await sleep(500)
   const n = await js('document.querySelectorAll(".namepin").length')
   ok('Place the names shows every name from the schedule map (9)', n === 9, n)
+  ok('names are placed at the phone map zoom (17)', await js(`!!document.querySelector('.leaflet-tile-container img[src*="/tile/17/"]')`))
+  ok('the schedule map names placed now do not touch (no red rings)', (await js('document.querySelectorAll(".namepin.clash").length')) === 0, await js('[...document.querySelectorAll(".namepin.clash")].map(e => e.textContent)'))
   const r0 = await js(`(() => { const e = [...document.querySelectorAll('.namepin')].find(x => x.textContent === 'Loading dock'); const b = e.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2] })()`)
   await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: r0[0], y: r0[1] })
   await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: r0[0], y: r0[1], button: 'left', clickCount: 1 })
