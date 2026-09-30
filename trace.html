@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trace the SynRG map</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.css">
+<style>
+  /* A working tool for Caryn, not part of the schedule: outline each spot on
+     the satellite picture, then copy the result back to Claude. */
+  :root{--ink:#1c2b21;--g:#2f6b3a;--g-soft:#d8ead9;--line:#dde5da;--wash:#f3f6f1;--slate:#4a5a4f;--amber:#f2b33d}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--wash)}
+  .app{display:grid;grid-template-columns:1fr 360px;height:100vh}
+  #map{height:100%}
+  aside{overflow-y:auto;border-left:1px solid var(--line);padding:14px 16px 30px;background:#fff}
+  h1{font-size:19px;margin:0 0 6px}
+  .how{font-size:13.5px;color:var(--slate);margin:0 0 12px;line-height:1.45}
+  .how ol{margin:6px 0 0;padding-left:18px}
+  .item{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:8px;
+        padding:9px 10px;margin:0 0 7px;font:inherit;font-size:14.5px;cursor:pointer}
+  .item .sw{width:14px;height:14px;border-radius:3px;flex:none}
+  .item .st{margin-left:auto;font-size:12px;color:var(--slate)}
+  .item.done .st{color:var(--g);font-weight:700}
+  .item.active{border-color:var(--amber);background:#fdf6e6}
+  .row{display:flex;gap:6px;margin:8px 0}
+  .row input{flex:1;padding:8px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:14px}
+  button.btn{border:0;border-radius:6px;background:var(--g);color:#fff;font:inherit;font-size:14px;font-weight:600;padding:9px 12px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--g);border:1.5px solid var(--g-soft)}
+  .sec{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+  .sec h2{font-size:15px;margin:0 0 6px}
+  .msg{font-size:13px;color:var(--g);min-height:1.2em;margin:6px 0 0}
+  textarea{width:100%;height:90px;font:12px ui-monospace,Consolas,monospace;border:1px solid var(--line);border-radius:6px;padding:6px}
+  .lbl{background:rgba(28,43,33,.82);color:#fff;border:0;border-radius:4px;font-weight:600;padding:2px 6px;box-shadow:none}
+  .lbl::before{display:none}
+  @media (max-width:800px){.app{grid-template-columns:1fr;grid-template-rows:62vh auto;height:auto}#map{height:62vh}aside{border-left:0;border-top:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="map"></div>
+  <aside>
+    <h1>Trace the SynRG map</h1>
+    <div class="how">
+      <ol>
+        <li>Tap a spot below.</li>
+        <li>Click around it on the picture, corner by corner. Click the <b>first point again</b> to close the outline.</li>
+        <li>Restrooms are pins: tap <b>Restroom</b>, then click each spot (one at a time).</li>
+        <li>To fix one: use the ✎ edit tool on the map's left (drag corners), the ✥ move tool, or 🗑 to delete.</li>
+        <li>Zoom the picture to how the schedule map should open and press <b>Use this view</b>.</li>
+        <li>Press <b>Copy for Claude</b> and paste it in the chat.</li>
+      </ol>
+      Your work is saved in this browser as you go.
+    </div>
+    <div id="items"></div>
+    <div class="row"><input id="new-name" placeholder="Another spot, e.g. Check-in"><button class="btn ghost" id="add-btn" type="button">+ Add</button></div>
+
+    <div class="sec">
+      <h2>The schedule map opens at…</h2>
+      <button class="btn ghost" id="view-btn" type="button">Use this view</button>
+      <p class="msg" id="view-msg"></p>
+    </div>
+    <div class="sec">
+      <h2>Send it back</h2>
+      <div class="row"><button class="btn" id="copy-btn" type="button">Copy for Claude</button><button class="btn ghost" id="dl-btn" type="button">Download</button></div>
+      <p class="msg" id="copy-msg"></p>
+      <details><summary style="font-size:13px;cursor:pointer">Load from another device (paste)</summary>
+        <textarea id="paste" placeholder="Paste a copied map here"></textarea>
+        <button class="btn ghost" id="load-btn" type="button">Load</button></details>
+      <p class="msg"><button class="btn ghost" id="clear-btn" type="button" style="font-size:12px;padding:5px 9px">Start over</button></p>
+    </div>
+  </aside>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.17.0/dist/leaflet-geoman.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  // The spots on the schedule. Ids match CONFIG.places in index.html where
+  // there is one; the rest are map-only.
+  const BASE = [
+    { id: "barn",        name: "Tractor barn",                          kind: "area",   color: "#f2b33d" },
+    { id: "headhouse",   name: "Headhouse (entrance to Greenhouse 1)",  kind: "area",   color: "#e8590c" },
+    { id: "greenhouse1", name: "Greenhouse 1",                          kind: "area",   color: "#74c0fc" },
+    { id: "dock",        name: "Loading dock",                          kind: "area",   color: "#be4bdb" },
+    { id: "trial",       name: "Trial garden",                          kind: "area",   color: "#51cf66" },
+    { id: "office",      name: "Main office (conference room)",         kind: "area",   color: "#ffffff" },
+    { id: "parking",     name: "Parking",                               kind: "area",   color: "#4dabf7" },
+    { id: "wc",          name: "Restroom",                              kind: "marker", color: "#0f766e" },
+  ];
+  const EXTRA_COLORS = ["#ff8787", "#ffd43b", "#63e6be", "#b197fc", "#ffa94d"];
+  const KEY = "synrg26.trace.v1";
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null } catch (e) { return null } };
+  let S = load() || { view: null, areas: {}, markers: { wc: [] }, custom: [] };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch (e) {} };
+  const items = () => BASE.concat(S.custom.map((c, i) => ({ id: c.id, name: c.name, kind: "area", color: EXTRA_COLORS[i % EXTRA_COLORS.length] })));
+  const byId = (id) => items().find(x => x.id === id);
+
+  // Same imagery as the Pesticide app's wind map, same centre.
+  const map = L.map("map", { zoomControl: true, maxZoom: 20 }).setView(S.view ? S.view.center : [39.4326, -75.3112], S.view ? S.view.zoom : 18);
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+    attribution: "Imagery © Esri, Maxar, Earthstar Geographics", maxNativeZoom: 19, maxZoom: 20,
+  }).addTo(map);
+  map.pm.addControls({ position: "topleft", drawMarker: false, drawCircleMarker: false, drawPolyline: false, drawRectangle: false,
+    drawPolygon: false, drawCircle: false, drawText: false, cutPolygon: false, rotateMode: true, editMode: true, dragMode: true, removalMode: true });
+  map.pm.setGlobalOptions({ snappable: false });
+
+  const layers = {};        // id -> polygon layer
+  let wcLayers = [];
+  let active = null;
+
+  const latlngsOf = (layer) => layer.getLatLngs()[0].map(p => [+p.lat.toFixed(7), +p.lng.toFixed(7)]);
+  function styleArea(layer, it) {
+    layer.setStyle({ color: it.color, weight: 3, fillColor: it.color, fillOpacity: .18 });
+    layer.bindTooltip(it.name, { permanent: true, direction: "center", className: "lbl" });
+    const sync = () => { S.areas[it.id] = latlngsOf(layer); save(); renderItems() };
+    layer.on("pm:edit pm:dragend pm:rotateend", sync);
+    layer.on("pm:remove", () => { delete S.areas[it.id]; delete layers[it.id]; save(); renderItems() });
+  }
+  function addArea(id, pts) {
+    const it = byId(id); if (!it) return;
+    if (layers[id]) map.removeLayer(layers[id]);
+    const layer = L.polygon(pts).addTo(map); layers[id] = layer; styleArea(layer, it);
+  }
+  function addWc(pt) {
+    const m = L.circleMarker(pt, { radius: 9, color: "#fff", weight: 3, fillColor: "#0f766e", fillOpacity: 1 }).addTo(map);
+    m.bindTooltip("Restroom", { direction: "top" });
+    wcLayers.push(m);
+    const sync = () => { S.markers.wc = wcLayers.filter(x => map.hasLayer(x)).map(x => { const p = x.getLatLng(); return [+p.lat.toFixed(7), +p.lng.toFixed(7)] }); save(); renderItems() };
+    m.on("pm:dragend pm:edit", sync);
+    m.on("pm:remove", () => { wcLayers = wcLayers.filter(x => x !== m); sync() });
+  }
+  for (const [id, pts] of Object.entries(S.areas)) addArea(id, pts);
+  (S.markers.wc || []).forEach(addWc);
+
+  function start(it) {
+    map.pm.disableDraw();
+    active = it;
+    renderItems();
+    if (it.kind === "marker") map.pm.enableDraw("CircleMarker", { continueDrawing: false, templineStyle: {}, pathOptions: { radius: 9, color: "#fff", weight: 3, fillColor: "#0f766e", fillOpacity: 1 } });
+    else map.pm.enableDraw("Polygon", { finishOn: null, pathOptions: { color: it.color, fillColor: it.color, fillOpacity: .18, weight: 3 } });
+  }
+  map.on("pm:create", (e) => {
+    const it = active; active = null;
+    if (!it) { map.removeLayer(e.layer); return }
+    if (it.kind === "marker") {
+      const p = e.layer.getLatLng(); map.removeLayer(e.layer);
+      S.markers.wc = (S.markers.wc || []).concat([[+p.lat.toFixed(7), +p.lng.toFixed(7)]]); addWc([p.lat, p.lng]);
+    } else {
+      const pts = latlngsOf(e.layer); map.removeLayer(e.layer);
+      S.areas[it.id] = pts; addArea(it.id, pts);
+    }
+    save(); renderItems();
+  });
+
+  function renderItems() {
+    document.getElementById("items").innerHTML = items().map(it => {
+      const done = it.kind === "marker" ? (S.markers.wc || []).length : !!S.areas[it.id];
+      const st = it.kind === "marker" ? (done ? done + " placed" : "none yet") : (done ? "✓ outlined" : "not yet");
+      return '<button type="button" class="item' + (done ? " done" : "") + (active && active.id === it.id ? " active" : "") + '" data-id="' + it.id + '">' +
+        '<span class="sw" style="background:' + it.color + ';border:1px solid #0003"></span>' + it.name + '<span class="st">' + (active && active.id === it.id ? "drawing…" : st) + '</span></button>';
+    }).join("");
+    document.querySelectorAll(".item").forEach(b => b.onclick = () => start(byId(b.dataset.id)));
+    document.getElementById("view-msg").textContent = S.view ? "Saved: zoom " + S.view.zoom + " around " + S.view.center.map(v => v.toFixed(5)).join(", ") : "Not set yet — the schedule will fit all the outlines.";
+  }
+  renderItems();
+
+  document.getElementById("add-btn").onclick = () => {
+    const inp = document.getElementById("new-name"), name = inp.value.trim(); if (!name) return;
+    const id = "x-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    if (!byId(id)) S.custom.push({ id, name });
+    inp.value = ""; save(); start(byId(id));
+  };
+  document.getElementById("view-btn").onclick = () => {
+    const c = map.getCenter(), b = map.getBounds();
+    S.view = { center: [+c.lat.toFixed(6), +c.lng.toFixed(6)], zoom: map.getZoom(),
+      bounds: [[+b.getSouth().toFixed(6), +b.getWest().toFixed(6)], [+b.getNorth().toFixed(6), +b.getEast().toFixed(6)]] };
+    save(); renderItems();
+  };
+  const payload = () => "SYNRG-MAP " + JSON.stringify(S);
+  document.getElementById("copy-btn").onclick = async () => {
+    const msg = document.getElementById("copy-msg");
+    try { await navigator.clipboard.writeText(payload()); msg.textContent = "Copied — paste it in the chat." }
+    catch (e) { const t = document.getElementById("paste"); t.value = payload(); t.parentElement.open = true; t.select(); msg.textContent = "Copy the text in the box below (Ctrl+C) and paste it in the chat." }
+  };
+  document.getElementById("dl-btn").onclick = () => {
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 1)], { type: "application/json" }));
+    a.download = "synrg-map-trace.json"; a.click();
+  };
+  document.getElementById("load-btn").onclick = () => {
+    try { const t = document.getElementById("paste").value.trim().replace(/^SYNRG-MAP\s*/, ""); S = JSON.parse(t); save(); location.reload() }
+    catch (e) { document.getElementById("copy-msg").textContent = "That did not look like a copied map." }
+  };
+  document.getElementById("clear-btn").onclick = () => { if (confirm("Delete every outline and start over?")) { localStorage.removeItem(KEY); location.reload() } };
+})();
+</script>
+</body>
+</html>
