@@ -29,6 +29,32 @@ let pass = 0, fail = 0
 const ok = (n, c, x) => { if (c) pass++; else { fail++; console.log('  FAIL: ' + n + (x !== undefined ? '  ' + JSON.stringify(x).slice(0, 240) : '')) } }
 
 await send('Runtime.enable'); await send('Page.enable')
+
+// A fake of Common Ground's /api/sessions, inside the page: the sign-up checks
+// never touch the live data and give the same answer every run. Its state
+// starts over on each page load (Bob already picked Propagation for S1);
+// localStorage 'fakeOff' makes every call fail like a phone with no signal.
+await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => {
+  const people = [{ id: 'p1', name: 'Ana López', company: 'Prides Corner' }, { id: 'p2', name: 'Bob Smith', company: 'Willoway' }];
+  const keys = ['grower','plant-health','propagation','shipping','lean','trialing','marketing'];
+  const picks = { 'p2|s1': 'propagation' };
+  const counts = () => { const o = { s1: {}, s2: {} }; for (const s of ['s1','s2']) for (const k of keys) o[s][k] = 0; for (const [k, g] of Object.entries(picks)) o[k.split('|')[1]][g]++; return o };
+  const mine = id => { const m = {}; for (const [k, g] of Object.entries(picks)) { const [pp, s] = k.split('|'); if (pp === id) m[s] = g } return m };
+  window.__posts = 0;
+  const real = window.fetch;
+  window.fetch = async (url, o = {}) => {
+    if (!String(url).includes('/api/sessions')) return real(url, o);
+    if (localStorage.getItem('fakeOff')) throw new TypeError('Failed to fetch');
+    const J = (b, st = 200) => new Response(JSON.stringify(b), { status: st, headers: { 'Content-Type': 'application/json' } });
+    if ((o.method || 'GET') === 'GET') { const id = new URL(url).searchParams.get('person'); return J({ counts: counts(), people, mine: mine(id), known: people.some(x => x.id === id) }) }
+    window.__posts++;
+    const b = JSON.parse(o.body);
+    if (b.join) { const np = { id: 'p' + (people.length + 1), name: b.join.name, company: b.join.company }; people.push(np); return J({ person: np }) }
+    if (!people.some(x => x.id === b.personId)) return J({ statusMessage: 'gone' }, 404);
+    if (b.group) picks[b.personId + '|' + b.session] = b.group; else delete picks[b.personId + '|' + b.session];
+    return J({ counts: counts(), mine: mine(b.personId) });
+  };
+})();` })
 await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
 
 let clockScript = null
@@ -53,9 +79,10 @@ ok('three days, all on the page', (await js('document.querySelectorAll(".day").l
 ok('every ride block is labelled', (await js('document.querySelectorAll(".ride").length')) === 7, await js('document.querySelectorAll(".ride").length'))
 ok('provided vs own counts', (await js('document.querySelectorAll(".ride.provided").length')) === 4 && (await js('document.querySelectorAll(".ride.own").length')) === 3)
 ok('Lucas and the brewery link to their websites', await js(`[...document.querySelectorAll('.b-where a')].some(a => a.href.includes('lucasgreenhouses.com')) && [...document.querySelectorAll('.b-where a')].some(a => a.href.includes('farmersandbankersbrewing.com'))`))
-ok('seven working groups in the table', (await js('document.querySelectorAll(".grp").length')) === 7)
-ok('each group: two sessions, each with its room, a summary line and its own Agenda drop-down (coming soon until filled); no Lean side note', await js(`(() => { const g = [...document.querySelectorAll('.grp')]; return g.every(x => { const s = x.querySelectorAll('.sess'); return s.length === 2 && [...s].every(e => e.querySelector('.room') && /Topic coming soon/.test(e.querySelector('.sum').textContent) && e.querySelector('details.agenda summary') && /Agenda coming soon/.test(e.querySelector('details.agenda').textContent)) }) && !/separate area near Shipping/.test(document.getElementById('group-list').textContent) })()`))
-ok('Session 2: Trialing in the conference room, Marketing in the trial garden', await js(`(() => { const s2 = n => [...document.querySelectorAll('.grp')].find(x => x.querySelector('h3').textContent === n).querySelectorAll('.sess')[1].querySelector('.room').textContent; return /Conference room/.test(s2('Trialing')) && /Trial garden/.test(s2('Marketing')) })()`))
+ok('working groups by session: two session headings, seven groups under each', (await js('document.querySelectorAll(".sess-h").length')) === 2 && (await js('document.querySelectorAll(".grp[data-s=s1]").length')) === 7 && (await js('document.querySelectorAll(".grp[data-s=s2]").length')) === 7)
+ok('session headings carry their times', /Session 1 · 8am–9:30am/.test(await js('document.getElementById("groups-s1").textContent')) && /Session 2 · 10:30am–12pm/.test(await js('document.getElementById("groups-s2").textContent')), await js('document.getElementById("groups-s1").textContent'))
+ok('each group card: its room, a summary line, its own Agenda drop-down (coming soon until filled) and an I’m going button', await js(`[...document.querySelectorAll('.grp')].every(x => x.querySelector('.room') && /Topic coming soon/.test(x.querySelector('.sum').textContent) && x.querySelector('details.agenda summary') && /Agenda coming soon/.test(x.querySelector('details.agenda').textContent) && x.querySelector('.pick'))`))
+ok('Session 2: Trialing in the conference room, Marketing in the trial garden', await js(`(() => { const r = (k, g) => document.querySelector('.grp[data-s=' + k + '][data-g=' + g + '] .room').textContent; return /Conference room/.test(r('s2', 'trialing')) && /Trial garden/.test(r('s2', 'marketing')) && /Trial garden/.test(r('s1', 'trialing')) })()`))
 ok('the satellite map names its spots (6 places + parking + entrance + Greenhouse 1), 2 restroom icons (WCs at the barn + the dock), 9 legend rows', (await js('document.querySelectorAll("#sitemap .maplbl-in").length')) === 9 && (await js('document.querySelectorAll("#sitemap .pinb.wc").length')) === 2 && (await js('[...document.querySelectorAll("#sitemap .pinb.wc")].map(e => e.textContent).sort().join()')) === "WC,WCs" && (await js('document.querySelectorAll("#legend li").length')) === 9)
 ok('names, not numbers, on the map', /Tractor barn/.test(await js('document.getElementById("sitemap").textContent')) && !/[1-6]/.test(await js('[...document.querySelectorAll("#sitemap .maplbl-in")].map(e => e.textContent).join(" ")')))
 ok('check-in, the entrance and the conference room are dots, not outlines', await js(`['checkin', 'conference', 'entrance'].every(k => _shapes[k] && _shapes[k].getLatLng) && !CONFIG.map.areas.office && !CONFIG.map.areas['x-check-in']`))
@@ -118,6 +145,50 @@ ok('Spanish fits a phone', await fits())
 await shot('wed-0820-es.png')
 await js(`document.querySelector('#lang-btn').click(); 1`); await sleep(200)
 ok('the switch goes back to English', /Working groups · Session 1/.test(await now()))
+
+/* ── session sign-ups (against the fake above) ── */
+await js('localStorage.removeItem("synrg26.me"); localStorage.removeItem("synrg26.mine"); localStorage.removeItem("fakeOff"); 1')
+await at('2026-10-01T10:00:00-04:00')
+const card = (k, g) => `document.querySelector('.grp[data-s=${k}][data-g=${g}]')`
+const count = (k, g) => js(card(k, g) + '.querySelector(".count").textContent')
+ok('counts show for every group, zeros included', (await count('s1', 'propagation')) === '1 going' && (await count('s1', 'shipping')) === '0 going' && (await count('s2', 'propagation')) === '0 going', await count('s1', 'propagation'))
+ok('the name box asks for a name first', /First, find your name/.test(await js('document.getElementById("me-box").textContent')))
+await js(card('s1', 'shipping') + '.querySelector(".pick").click(); 1'); await sleep(300)
+ok('I’m going with no name: asks for the name, saves nothing', /Find your name first/.test(await js('document.getElementById("me-box").textContent')) && (await js('__posts')) === 0 && (await count('s1', 'shipping')) === '0 going')
+await js('const q = document.getElementById("me-q"); q.value = "lop"; q.dispatchEvent(new Event("input")); 1'); await sleep(100)
+ok('typing part of a name finds it, accents ignored', /Ana López/.test(await js('document.getElementById("me-hits").textContent')) && !/Bob/.test(await js('document.getElementById("me-hits").textContent')))
+await js('document.querySelector("#me-hits button").click(); 1'); await sleep(300)
+ok('picking the name: "Marking your groups as Ana López"', /Marking your groups as Ana López/.test(await js('document.getElementById("me-box").textContent')))
+await js(card('s1', 'shipping') + '.querySelector(".pick").click(); 1'); await sleep(300)
+ok('I’m going: the button turns on, the count goes up, the card is marked', (await js(card('s1', 'shipping') + '.querySelector(".pick").textContent')) === '✓ You’re going' && (await count('s1', 'shipping')) === '1 going' && (await js(card('s1', 'shipping') + '.classList.contains("mine")')))
+ok('the Session 1 block in the schedule says "Your group: Shipping · Loading dock"', /Your group: Shipping · 📍 Loading dock/.test(await js('document.querySelector(".b-mine[data-s=s1]").textContent')) && !(await js('document.querySelector(".b-mine[data-s=s1]").hidden')))
+await js(card('s1', 'propagation') + '.querySelector(".pick").click(); 1'); await sleep(300)
+ok('tapping another group switches (one per session): Shipping 0, Propagation 2', (await count('s1', 'shipping')) === '0 going' && (await count('s1', 'propagation')) === '2 going' && (await js('document.querySelectorAll(".grp[data-s=s1] .pick.on").length')) === 1)
+await js(card('s2', 'lean') + '.querySelector(".pick").click(); 1'); await sleep(300)
+ok('Session 2 is its own pick', (await count('s2', 'lean')) === '1 going' && (await count('s1', 'propagation')) === '2 going')
+await js(card('s1', 'propagation') + '.querySelector(".pick").click(); 1'); await sleep(300)
+ok('tapping yours again undoes it', (await count('s1', 'propagation')) === '1 going' && (await js('document.querySelectorAll(".grp[data-s=s1] .pick.on").length')) === 0 && (await js('document.querySelector(".b-mine[data-s=s1]").hidden')))
+ok('sign-ups fit a phone', await fits())
+await shot('signup.png')
+
+// the page reloads: the fake server starts over, the name is remembered
+await at('2026-10-07T10:40:00-04:00')
+ok('the name is remembered on the next visit', /Marking your groups as Ana López/.test(await js('document.getElementById("me-box").textContent')))
+await js(card('s2', 'marketing') + '.querySelector(".pick").click(); 1'); await sleep(300)
+ok('Wed 10:40, Session 2 on: Right now shows your group and its room', /Your group: Marketing · 📍 Trial garden/.test(await now()), await now())
+await js('document.getElementById("me-out").click(); 1'); await sleep(200)
+ok('Not you? forgets the name', /First, find your name/.test(await js('document.getElementById("me-box").textContent')))
+await js('document.getElementById("me-new").click(); 1'); await sleep(100)
+await js('document.getElementById("me-new-name").value = "Cy New"; document.getElementById("me-new-co").value = "Bylands"; document.getElementById("me-add").click(); 1'); await sleep(400)
+ok('not on the list: add your name, then you are marking as them', /Marking your groups as Cy New · Bylands/.test(await js('document.getElementById("me-box").textContent')))
+
+await at('2026-10-01T10:00:00-04:00', 'es')
+ok('Spanish: Voy / van', (await js(card('s1', 'grower') + '.querySelector(".pick").textContent')) === 'Voy' && /^\d+ van$/.test(await count('s1', 'grower')))
+
+await js('localStorage.setItem("fakeOff", "1"); 1')
+await at('2026-10-01T10:00:00-04:00')
+ok("no signal: says so, buttons off, no count badges, the rest of the page still works", !(await js("!!document.querySelector(\".count\")")) && /needs a signal/.test(await js('document.getElementById("me-box").textContent')) && (await js('[...document.querySelectorAll(".pick")].every(b => b.disabled)')) && (await js('document.querySelectorAll(".day").length')) === 3)
+await js('localStorage.removeItem("fakeOff"); localStorage.removeItem("synrg26.me"); localStorage.removeItem("synrg26.mine"); 1')
 
 console.log(problems.length ? 'PAGE PROBLEMS:\n  ' + [...new Set(problems)].join('\n  ') : 'no page errors')
 console.log(`check: ${pass} passed, ${fail} failed`)

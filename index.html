@@ -67,6 +67,7 @@ const CONFIG = {
   // note          optional small print under it (something only a few people need)
   // stops         optional sub-items: { name, details }
   // groups        true = this block points at the working-groups table
+  // session       "s1" / "s2" = which sign-up session it is (shows "Your group")
   days: [
     {
       date: "2026-10-06",
@@ -97,7 +98,7 @@ const CONFIG = {
           details: { en: "Leaves the Fairfield Inn & Suites at 7:15.", es: "Sale del Fairfield Inn & Suites a las 7:15." } },
         { start: "07:45", end: "08:00", where: "barn",
           title: { en: "Arrive at Overdevest", es: "Llegada a Overdevest" } },
-        { start: "08:00", end: "09:30", where: "", groups: true,
+        { start: "08:00", end: "09:30", where: "", groups: true, session: "s1",
           title: { en: "Working groups · Session 1", es: "Grupos de trabajo · Sesión 1" },
           details: { en: "See the table below for where each group meets.", es: "Vea la tabla abajo para saber dónde se reúne cada grupo." } },
         { start: "09:30", end: "09:45", where: "barn",
@@ -105,7 +106,7 @@ const CONFIG = {
           note: { en: "WF partner sales update in the conference room (for WF partners).", es: "Actualización de ventas de socios WF en la sala de conferencias (para los socios WF)." } },
         { start: "09:45", end: "10:30", where: "barn",
           title: { en: "Harnessing AI to Solve Problems", es: "Usar la IA para resolver problemas" } },
-        { start: "10:30", end: "12:00", where: "", groups: true,
+        { start: "10:30", end: "12:00", where: "", groups: true, session: "s2",
           title: { en: "Working groups · Session 2", es: "Grupos de trabajo · Sesión 2" },
           details: { en: "See the table below for where each group meets.", es: "Vea la tabla abajo para saber dónde se reúne cada grupo." } },
         { start: "12:00", end: "13:30", where: "barn",
@@ -160,29 +161,36 @@ const CONFIG = {
   //   summary1: { en: "Growing the crop: PGRs and timing", es: "Producir el cultivo: PGR y tiempos" },
   //   agenda1:  { en: ["8:00  Welcome", "8:10  PGR talk"], es: ["8:00  Bienvenida", "8:10  Charla de PGR"] },
   // null = "coming soon".
+  // key: must match GROUP_KEYS in Common Ground (shared/sessions.js), which
+  // stores the sign-ups — a key it does not know is refused.
   groups: [
-    { name: { en: "Grower (Perennials + Woodies)", es: "Productores (perennes + leñosas)" },
+    { key: "grower", name: { en: "Grower (Perennials + Woodies)", es: "Productores (perennes + leñosas)" },
       s1: "barn", summary1: null, agenda1: null,
       s2: "barn", summary2: null, agenda2: null },
-    { name: { en: "Plant Health", es: "Sanidad Vegetal" },
+    { key: "plant-health", name: { en: "Plant Health", es: "Sanidad Vegetal" },
       s1: "barn", summary1: null, agenda1: null,
       s2: "barn", summary2: null, agenda2: null },
-    { name: { en: "Propagation", es: "Propagación" },
+    { key: "propagation", name: { en: "Propagation", es: "Propagación" },
       s1: "headhouse", summary1: null, agenda1: null,
       s2: "headhouse", summary2: null, agenda2: null },
-    { name: { en: "Shipping", es: "Envíos" },
+    { key: "shipping", name: { en: "Shipping", es: "Envíos" },
       s1: "dock", summary1: null, agenda1: null,
       s2: "dock", summary2: null, agenda2: null },
-    { name: { en: "Lean Management", es: "Gestión Lean" },
+    { key: "lean", name: { en: "Lean Management", es: "Gestión Lean" },
       s1: "dock", summary1: null, agenda1: null,
       s2: "dock", summary2: null, agenda2: null },
-    { name: { en: "Trialing", es: "Pruebas de plantas" },
+    { key: "trialing", name: { en: "Trialing", es: "Pruebas de plantas" },
       s1: "trial", summary1: null, agenda1: null,
       s2: "conference", summary2: null, agenda2: null },
-    { name: { en: "Marketing", es: "Mercadeo" },
+    { key: "marketing", name: { en: "Marketing", es: "Mercadeo" },
       s1: "conference", summary1: null, agenda1: null,
       s2: "trial", summary2: null, agenda2: null },
   ],
+
+  // Session sign-ups: people find their name (Common Ground's attendee list)
+  // and tap "I'm going" on one group per session; everyone sees the counts,
+  // the names are on Common Ground's organizer page (Sign-ups). null = off.
+  signup: { api: "https://commonground-4un.pages.dev/api/sessions" },
 
   // ---- GOOD TO KNOW -------------------------------------------------------
   // Lead each line with an emoji. Public page — nothing private here.
@@ -368,6 +376,31 @@ const CONFIG = {
   .grp .agenda p{margin:2px 0 4px}
   .grp .agenda ul{margin:4px 0 4px;padding-left:18px;font-size:15px;line-height:1.45}
 
+  /* session sign-ups */
+  .sess-h{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;font-size:19px;color:var(--g);margin:22px 0 2px;scroll-margin-top:70px}
+  .sess-hint{margin:0 0 10px;color:var(--slate);font-size:14px}
+  .grp-top{display:flex;align-items:baseline;gap:10px}
+  .grp-top h3{flex:1;margin:0}
+  .count{flex:none;font-family:var(--mono);font-size:13px;color:var(--g-deep);background:var(--g-soft);border-radius:999px;padding:3px 9px;white-space:nowrap}
+  .grp .room{margin-top:4px;font-size:15px}
+  .grp.mine{border:2px solid var(--g);box-shadow:0 0 0 3px var(--g-soft)}
+  .pick{display:block;width:100%;margin-top:8px;min-height:44px;font:700 16px var(--body);border-radius:8px;border:2px solid var(--g);background:var(--card);color:var(--g-deep);cursor:pointer}
+  .pick.on{background:var(--g);color:#fff}
+  .pick:disabled{opacity:.5;cursor:default}
+  .me-box{background:var(--card);border:1.5px solid var(--g-soft);border-radius:12px;padding:12px 14px;margin:4px 0 6px;box-shadow:var(--shadow);scroll-margin-top:70px}
+  .me-box p{margin:0 0 8px;font-size:15px}
+  .me-box label{display:block;font-weight:700;font-size:15px;margin:2px 0 6px;color:var(--g-deep)}
+  .me-box input{width:100%;box-sizing:border-box;font:16px var(--body);padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:#1c2b21;margin-bottom:8px}
+  .me-box .hits{display:grid;gap:6px;margin-bottom:6px}
+  .me-box .hits button,.me-box .add-btn{text-align:left;min-height:44px;font:16px var(--body);padding:8px 12px;border-radius:8px;border:1.5px solid var(--g-soft);background:var(--wash);color:var(--ink);cursor:pointer}
+  .me-box .hits small{color:var(--slate)}
+  .me-box .link{background:none;border:0;padding:6px 0;color:var(--g);font:600 15px var(--body);text-decoration:underline;cursor:pointer}
+  .me-box .add-btn{background:var(--g);color:#fff;border-color:var(--g);text-align:center;font-weight:700;width:100%}
+  .me-box .msg{color:#b42318;font-weight:600}
+  .me-box.flash{animation:meflash 1s ease-in-out 2}
+  @keyframes meflash{50%{box-shadow:0 0 0 4px var(--amber)}}
+  .b-mine{font-weight:700;color:var(--g-deep);margin:8px 0 0}
+
   /* map */
   .map-section{padding-top:30px}
   .map-frame{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:var(--shadow)}
@@ -472,6 +505,7 @@ const CONFIG = {
   <section class="groups wrap" id="groups">
     <h2 id="lbl-groups">Working groups</h2>
     <p class="sub" id="lbl-groups-sub"></p>
+    <div class="me-box" id="me-box" hidden></div>
     <div id="group-list"></div>
   </section>
 
@@ -506,14 +540,26 @@ const CONFIG = {
   /* ---------- language ---------- */
   const UI = {
     en: { lang: "Español", now: "Right now", jump: "Jump to now", groups: "Working groups",
-          groupsSub: "Wednesday, October 7 · Session 1 8:00–9:30 · Session 2 10:30–12:00",
+          groupsSub: "Wednesday, October 7 — pick one group for each session, so each leader knows how many to expect.",
+          findName: "First, find your name", typeName: "Start typing your name", noMatch: "No match — check the spelling, or add your name below.",
+          notListed: "Not on the list? Add your name", yourName: "Your name", company: "Nursery or company", addMe: "Add me",
+          markingAs: "Marking your groups as", notYou: "Not you?", going: "going", imGoing: "I’m going", youreGoing: "✓ You’re going",
+          sessHint: "Tap another group to switch, or tap yours again to undo.", needName: "Find your name first, then tap “I’m going”.",
+          offline: "Marking your groups needs a signal — open this page again when you have one.", saveFail: "Could not save — check your signal and try again.",
+          yourGroup: "Your group",
           s1: "Session 1", s2: "Session 2", both: "Both sessions", agenda: "Agenda", agendaSoon: "Agenda coming soon.", summarySoon: "Topic coming soon.", map: "Map of Overdevest", info: "Good to know",
           provided: "🚌 Ride provided", own: "🚗 On your own", web: "Website", onMap: "On the map", seeGroups: "See the working groups",
           before: "Starts", notStarted: "Not started yet", firstUp: "First up", wrap: "That’s a wrap", thanks: "Thanks for coming — safe travels!",
           between: "Between sessions", free: "Free time", next: "Next", left: "left", nowB: "Now", nextB: "Next", call: "Call",
           add: "Add", hr: "hr", min: "min", overnight: "See you tomorrow", tomorrow: "Tomorrow" },
     es: { lang: "English", now: "Ahora", jump: "Ir a ahora", groups: "Grupos de trabajo",
-          groupsSub: "Miércoles 7 de octubre · Sesión 1 8:00–9:30 · Sesión 2 10:30–12:00",
+          groupsSub: "Miércoles 7 de octubre — elija un grupo para cada sesión, para que cada líder sepa cuántas personas esperar.",
+          findName: "Primero, busque su nombre", typeName: "Empiece a escribir su nombre", noMatch: "No aparece — revise cómo lo escribió, o agregue su nombre abajo.",
+          notListed: "¿No está en la lista? Agregue su nombre", yourName: "Su nombre", company: "Vivero o empresa", addMe: "Agregarme",
+          markingAs: "Marcando sus grupos como", notYou: "¿No es usted?", going: "van", imGoing: "Voy", youreGoing: "✓ Usted va",
+          sessHint: "Toque otro grupo para cambiar, o toque el suyo otra vez para quitarlo.", needName: "Primero busque su nombre, luego toque “Voy”.",
+          offline: "Para marcar sus grupos necesita señal — abra esta página otra vez cuando tenga.", saveFail: "No se pudo guardar — revise su señal e intente otra vez.",
+          yourGroup: "Su grupo",
           s1: "Sesión 1", s2: "Sesión 2", both: "Ambas sesiones", agenda: "Agenda", agendaSoon: "Agenda próximamente.", summarySoon: "Tema próximamente.", map: "Mapa de Overdevest", info: "Bueno saber",
           provided: "🚌 Transporte incluido", own: "🚗 Por su cuenta", web: "Sitio web", onMap: "En el mapa", seeGroups: "Ver los grupos de trabajo",
           before: "Empieza", notStarted: "Todavía no empieza", firstUp: "Primero", wrap: "¡Eso es todo!", thanks: "Gracias por venir — ¡buen viaje!",
@@ -589,26 +635,15 @@ const CONFIG = {
         if (b.details) h += '<p>' + esc(L(b.details)) + '</p>';
         if (b.note) h += '<p class="b-note">' + esc(L(b.note)) + '</p>';
         if (b.stops) h += '<ul class="stops">' + b.stops.map(s => '<li><b>' + esc(L(s.name)) + '</b>' + (s.details ? '<p>' + esc(L(s.details)) + '</p>' : '') + '</li>').join("") + '</ul>';
+        if (b.session) h += '<p class="b-mine" data-s="' + b.session + '" hidden></p>';
         if (b.groups) h += '<a class="go" href="#groups">' + esc(u("seeGroups")) + ' ↓</a>';
         return h + '</div></div>';
       }).join("");
       return '<section class="day wrap" id="day-' + di + '"><h2>' + esc(L(d.label)) + '</h2><div class="rail">' + blocks + '</div></section>';
     }).join("");
 
-    $("#group-list").innerHTML = C.groups.map(g => {
-      const room = id => { const p = C.places[id]; const n = esc(L(p && p.name)); return C.showMap ? '<a href="#place-' + id + '">' + n + '</a>' : n; };
-      let h = '<div class="grp"><h3>' + esc(L(g.name)) + '</h3>';
-      for (const k of [1, 2]) {
-        const sum = g["summary" + k] ? L(g["summary" + k]) : "";
-        const items = g["agenda" + k] ? (g["agenda" + k][lang] || g["agenda" + k].en || []) : [];
-        h += '<div class="sess"><div class="row"><span class="lbl">' + esc(u("s" + k)) + '</span><span class="room">📍 ' + room(g["s" + k]) + '</span></div>'
-          + '<p class="sum' + (sum ? '' : ' soon') + '">' + esc(sum || u("summarySoon")) + '</p>'
-          + '<details class="agenda"><summary>' + esc(u("agenda")) + '</summary>' + (items.length
-            ? '<ul>' + items.map(t => '<li>' + esc(t) + '</li>').join("") + '</ul>'
-            : '<p class="theme">' + esc(u("agendaSoon")) + '</p>') + '</details></div>';
-      }
-      return h + '</div>';
-    }).join("");
+    renderGroups();
+    renderMe();
 
     if (C.showMap){
       $("#map-section").hidden = false;
@@ -634,6 +669,137 @@ const CONFIG = {
     tick();
   }
 
+  /* ---------- working groups, by session, with sign-ups ----------
+     The picks are stored by Common Ground (CONFIG.signup.api): people pick
+     their name off its attendee list once, so a second phone changes their
+     pick instead of counting them twice. Counts are public; names are only on
+     Common Ground's organizer page. */
+  const ME_KEY = "synrg26.me", MINE_KEY = "synrg26.mine";
+  const rd = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
+  const wr = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  var SU = { api: C.signup && C.signup.api, me: rd(ME_KEY), mine: rd(MINE_KEY) || {}, counts: null, people: [],
+             status: "loading", msg: "", adding: false, q: "" };
+  const SESS = ["s1", "s2"];
+  const sessBlock = k => all.find(b => b.session === k);
+  const groupByKey = k => C.groups.find(g => g.key === k);
+  const roomHtml = id => { const p = C.places[id]; const n = esc(L(p && p.name)); return '📍 ' + (C.showMap ? '<a href="#place-' + id + '">' + n + '</a>' : n); };
+  function mineText(k){
+    const g = groupByKey(SU.mine[k]); if (!g) return "";
+    return esc(u("yourGroup")) + ': ' + esc(L(g.name)) + ' · ' + roomHtml(g[k]);
+  }
+  function renderGroups(){
+    $("#group-list").innerHTML = SESS.map(k => {
+      const b = sessBlock(k);
+      let h = '<h3 class="sess-h" id="groups-' + k + '">' + esc(u(k)) + (b ? ' · ' + esc(range(b)) : '') + '</h3>';
+      if (SU.api) h += '<p class="sess-hint">' + esc(u("sessHint")) + '</p>';
+      return h + C.groups.map(g => {
+        const n = k.slice(1), on = SU.mine[k] === g.key;
+        const sum = g["summary" + n] ? L(g["summary" + n]) : "";
+        const items = g["agenda" + n] ? (g["agenda" + n][lang] || g["agenda" + n].en || []) : [];
+        const cnt = SU.counts && SU.counts[k] ? SU.counts[k][g.key] : null;
+        return '<div class="grp' + (on ? ' mine' : '') + '" data-s="' + k + '" data-g="' + esc(g.key) + '">'
+          + '<div class="grp-top"><h3>' + esc(L(g.name)) + '</h3>' + (SU.api && cnt != null ? '<span class="count">' + cnt + ' ' + esc(u("going")) + '</span>' : '') + '</div>'
+          + '<div class="room">' + roomHtml(g[k]) + '</div>'
+          + '<p class="sum' + (sum ? '' : ' soon') + '">' + esc(sum || u("summarySoon")) + '</p>'
+          + '<details class="agenda"><summary>' + esc(u("agenda")) + '</summary>' + (items.length
+            ? '<ul>' + items.map(t => '<li>' + esc(t) + '</li>').join("") + '</ul>'
+            : '<p class="theme">' + esc(u("agendaSoon")) + '</p>') + '</details>'
+          + (SU.api ? '<button class="pick' + (on ? ' on' : '') + '" type="button" aria-pressed="' + on + '"' + (SU.status === "offline" ? ' disabled' : '') + '>' + esc(u(on ? "youreGoing" : "imGoing")) + '</button>' : '')
+          + '</div>';
+      }).join("");
+    }).join("");
+    $("#group-list").querySelectorAll(".pick").forEach(btn => btn.onclick = () => { const c = btn.closest(".grp"); pick(c.dataset.s, c.dataset.g); });
+    document.querySelectorAll(".block .b-mine").forEach(el => { const t = mineText(el.dataset.s); el.hidden = !t; el.innerHTML = t; });
+    tick();   // "Right now" names your group during a session
+  }
+  const norm = t => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  function renderHits(){
+    const box = $("#me-hits"); if (!box) return;
+    const q = norm(SU.q).trim();
+    if (q.length < 2) { box.innerHTML = ""; return; }
+    const words = q.split(/\s+/);
+    const hits = SU.people.filter(p => { const t = norm(p.name + " " + p.company); return words.every(w => t.includes(w)); }).slice(0, 8);
+    box.innerHTML = hits.length ? hits.map(p => '<button type="button" data-id="' + esc(p.id) + '">' + esc(p.name) + (p.company ? ' <small>· ' + esc(p.company) + '</small>' : '') + '</button>').join("")
+      : '<p>' + esc(u("noMatch")) + '</p>';
+    box.querySelectorAll("button").forEach(bt => bt.onclick = () => { const p = SU.people.find(x => x.id === bt.dataset.id); if (p) setMe(p); });
+  }
+  function renderMe(){
+    const box = $("#me-box");
+    if (!SU.api) { box.hidden = true; return; }
+    box.hidden = false;
+    let h = "";
+    if (SU.status === "offline") h += '<p class="msg">' + esc(u("offline")) + '</p>';
+    else if (SU.me) h += '<p>' + esc(u("markingAs")) + ' <b>' + esc(SU.me.name) + '</b>' + (SU.me.company ? ' · ' + esc(SU.me.company) : '') + ' <button class="link" type="button" id="me-out">' + esc(u("notYou")) + '</button></p>';
+    else if (SU.adding) h += '<label for="me-new-name">' + esc(u("yourName")) + '</label><input id="me-new-name" autocomplete="name">'
+      + '<label for="me-new-co">' + esc(u("company")) + '</label><input id="me-new-co" autocomplete="organization">'
+      + '<button class="add-btn" type="button" id="me-add">' + esc(u("addMe")) + '</button>';
+    else h += '<label for="me-q">' + esc(u("findName")) + '</label><input id="me-q" type="search" autocomplete="off" placeholder="' + esc(u("typeName")) + '">'
+      + '<div class="hits" id="me-hits"></div><button class="link" type="button" id="me-new">' + esc(u("notListed")) + '</button>';
+    if (SU.msg) h += '<p class="msg">' + esc(SU.msg) + '</p>';
+    box.innerHTML = h;
+    const q = $("#me-q"); if (q) { q.value = SU.q; q.oninput = () => { SU.q = q.value; renderHits(); }; renderHits(); }
+    const out = $("#me-out"); if (out) out.onclick = () => { SU.me = null; SU.mine = {}; SU.q = ""; wr(ME_KEY, null); wr(MINE_KEY, null); renderMe(); renderGroups(); };
+    const nw = $("#me-new"); if (nw) nw.onclick = () => { SU.adding = true; SU.msg = ""; renderMe(); $("#me-new-name").focus(); };
+    const add = $("#me-add"); if (add) add.onclick = async () => {
+      const name = $("#me-new-name").value.trim(), company = $("#me-new-co").value.trim();
+      if (!name) { $("#me-new-name").focus(); return; }
+      try { const r = await api({ join: { name, company } }); SU.adding = false; setMe(r.person); }
+      catch (e) { SU.msg = u("saveFail"); renderMe(); }
+    };
+  }
+  async function api(body){
+    const r = await fetch(SU.api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const j = await r.json().catch(() => null);
+    if (!r.ok) { const e = new Error((j && (j.statusMessage || j.message)) || "HTTP " + r.status); e.status = r.status; throw e; }
+    return j;
+  }
+  function setMe(p){
+    SU.me = { id: p.id, name: p.name, company: p.company || "" }; SU.q = ""; SU.msg = "";
+    wr(ME_KEY, SU.me);
+    if (!SU.people.some(x => x.id === p.id)) SU.people.push(SU.me);
+    renderMe(); renderGroups();
+    loadSignup();   // their picks from another phone, if any
+  }
+  async function pick(k, key){
+    if (!SU.me) {
+      SU.msg = u("needName"); renderMe();
+      const box = $("#me-box"); box.scrollIntoView({ behavior: "smooth", block: "center" });
+      box.classList.remove("flash"); void box.offsetWidth; box.classList.add("flash");
+      const q = $("#me-q"); if (q) setTimeout(() => q.focus({ preventScroll: true }), 400);
+      return;
+    }
+    const before = { mine: Object.assign({}, SU.mine), counts: JSON.parse(JSON.stringify(SU.counts || null)) };
+    const next = SU.mine[k] === key ? "" : key;
+    // show it straight away; the server's answer replaces the guess
+    if (SU.counts && SU.counts[k]) { if (SU.mine[k] && SU.counts[k][SU.mine[k]] > 0) SU.counts[k][SU.mine[k]]--; if (next) SU.counts[k][next] = (SU.counts[k][next] || 0) + 1; }
+    if (next) SU.mine[k] = next; else delete SU.mine[k];
+    SU.msg = ""; renderGroups(); renderMe();
+    try {
+      const r = await api({ personId: SU.me.id, session: k, group: next });
+      SU.counts = r.counts; SU.mine = r.mine || {}; wr(MINE_KEY, SU.mine);
+    } catch (e) {
+      SU.mine = before.mine; SU.counts = before.counts;
+      if (e.status === 404) { SU.me = null; SU.mine = {}; wr(ME_KEY, null); wr(MINE_KEY, null); }
+      SU.msg = u("saveFail");
+    }
+    renderGroups(); renderMe();
+  }
+  async function loadSignup(){
+    if (!SU.api) return;
+    try {
+      const r = await fetch(SU.api + (SU.me ? "?person=" + encodeURIComponent(SU.me.id) : ""), { cache: "no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const j = await r.json();
+      SU.counts = j.counts; SU.people = j.people || [];
+      if (SU.me && !j.known) { SU.me = null; SU.mine = {}; wr(ME_KEY, null); wr(MINE_KEY, null); }
+      else if (SU.me) { SU.mine = j.mine || {}; wr(MINE_KEY, SU.mine); }
+      SU.status = "ok";
+    } catch (e) { if (!SU.counts) SU.status = "offline"; }
+    // never rebuild the name box under someone's thumb while they type
+    if (document.activeElement && document.activeElement.id === "me-q") renderHits(); else renderMe();
+    renderGroups();
+  }
+
   /* ---------- live ---------- */
   function tick(){
     const now = new Date(), s = state(now), card = $("#now-card");
@@ -650,6 +816,7 @@ const CONFIG = {
       card.innerHTML = '<p class="now-time">' + esc(range(c)) + '</p><h2 class="now-title">' + esc(L(c.title)) + '</h2>' +
         (c.where ? '<p class="now-where">' + whereHtml(c.where) + '</p>' : '') +
         (c.ride ? '<span class="ride ' + c.ride + '">' + esc(u(c.ride)) + '</span>' : '') +
+        (c.session && mineText(c.session) ? '<p class="b-mine">' + mineText(c.session) + '</p>' : '') +
         '<div class="meter"><span style="width:' + pct.toFixed(1) + '%"></span></div><p class="meter-label">' + esc(dur(mins(c.endAt - now)) + " " + u("left")) + '</p>' +
         (s.next ? '<p class="up-next">' + esc(u("next")) + ' ' + esc(nextWhen(s.next, now)) + ': <b>' + esc(L(s.next.title)) + '</b></p>' : '');
     } else {
@@ -688,6 +855,9 @@ const CONFIG = {
   });
   render();
   setInterval(tick, 30000);
+  loadSignup();
+  // fresh counts when the phone comes back to the page
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") loadSignup(); });
 
   /* Works offline once opened (barns and fields have weak signal). */
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
