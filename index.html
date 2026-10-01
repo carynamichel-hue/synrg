@@ -377,7 +377,13 @@ const CONFIG = {
   .grp .agenda ul{margin:4px 0 4px;padding-left:18px;font-size:15px;line-height:1.45}
 
   /* session sign-ups */
-  .sess-h{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;font-size:19px;color:var(--g);margin:22px 0 2px;scroll-margin-top:70px}
+  .sess-h{font-weight:700;font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;font-size:19px;color:var(--g);margin:22px 0 2px}
+  .sess-list > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;min-height:44px}
+  .sess-list > summary::-webkit-details-marker{display:none}
+  .sess-list > summary::before{content:"▸";display:inline-block;width:1em;transition:transform .15s}
+  .sess-list[open] > summary::before{transform:rotate(90deg)}
+  .sess-list{scroll-margin-top:0}   /* html scroll-padding-top already clears the day bar */
+  .sess-ended{color:var(--slate);font-size:15px}
   .sess-hint{margin:0 0 10px;color:var(--slate);font-size:14px}
   .grp-top{display:flex;align-items:baseline;gap:10px}
   .grp-top h3{flex:1;margin:0}
@@ -387,7 +393,7 @@ const CONFIG = {
   .pick{display:block;width:100%;margin-top:8px;min-height:44px;font:700 16px var(--body);border-radius:8px;border:2px solid var(--g);background:var(--card);color:var(--g-deep);cursor:pointer}
   .pick.on{background:var(--g);color:#fff}
   .pick:disabled{opacity:.5;cursor:default}
-  .me-box{background:var(--card);border:1.5px solid var(--g-soft);border-radius:12px;padding:12px 14px;margin:4px 0 6px;box-shadow:var(--shadow);scroll-margin-top:70px}
+  .me-box{background:var(--card);border:1.5px solid var(--g-soft);border-radius:12px;padding:12px 14px;margin:4px 0 6px;box-shadow:var(--shadow);scroll-margin-top:8px}
   .me-box p{margin:0 0 8px;font-size:15px}
   .me-box label{display:block;font-weight:700;font-size:15px;margin:2px 0 6px;color:var(--g-deep)}
   .me-box input{width:100%;box-sizing:border-box;font:16px var(--body);padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:#1c2b21;margin-bottom:8px}
@@ -546,7 +552,7 @@ const CONFIG = {
           markingAs: "Marking your groups as", notYou: "Not you?", going: "going", imGoing: "I’m going", youreGoing: "✓ You’re going",
           sessHint: "Tap another group to switch, or tap yours again to undo.", needName: "Find your name first, then tap “I’m going”.",
           offline: "Marking your groups needs a signal — open this page again when you have one.", saveFail: "Could not save — check your signal and try again.",
-          yourGroup: "Your group",
+          yourGroup: "Your group", ended: "ended",
           s1: "Session 1", s2: "Session 2", both: "Both sessions", agenda: "Agenda", agendaSoon: "Agenda coming soon.", summarySoon: "Topic coming soon.", map: "Map of Overdevest", info: "Good to know",
           provided: "🚌 Ride provided", own: "🚗 On your own", web: "Website", onMap: "On the map", seeGroups: "See the working groups",
           before: "Starts", notStarted: "Not started yet", firstUp: "First up", wrap: "That’s a wrap", thanks: "Thanks for coming — safe travels!",
@@ -559,7 +565,7 @@ const CONFIG = {
           markingAs: "Marcando sus grupos como", notYou: "¿No es usted?", going: "van", imGoing: "Voy", youreGoing: "✓ Usted va",
           sessHint: "Toque otro grupo para cambiar, o toque el suyo otra vez para quitarlo.", needName: "Primero busque su nombre, luego toque “Voy”.",
           offline: "Para marcar sus grupos necesita señal — abra esta página otra vez cuando tenga.", saveFail: "No se pudo guardar — revise su señal e intente otra vez.",
-          yourGroup: "Su grupo",
+          yourGroup: "Su grupo", ended: "terminó",
           s1: "Sesión 1", s2: "Sesión 2", both: "Ambas sesiones", agenda: "Agenda", agendaSoon: "Agenda próximamente.", summarySoon: "Tema próximamente.", map: "Mapa de Overdevest", info: "Bueno saber",
           provided: "🚌 Transporte incluido", own: "🚗 Por su cuenta", web: "Sitio web", onMap: "En el mapa", seeGroups: "Ver los grupos de trabajo",
           before: "Empieza", notStarted: "Todavía no empieza", firstUp: "Primero", wrap: "¡Eso es todo!", thanks: "Gracias por venir — ¡buen viaje!",
@@ -636,12 +642,14 @@ const CONFIG = {
         if (b.note) h += '<p class="b-note">' + esc(L(b.note)) + '</p>';
         if (b.stops) h += '<ul class="stops">' + b.stops.map(s => '<li><b>' + esc(L(s.name)) + '</b>' + (s.details ? '<p>' + esc(L(s.details)) + '</p>' : '') + '</li>').join("") + '</ul>';
         if (b.session) h += '<p class="b-mine" data-s="' + b.session + '" hidden></p>';
-        if (b.groups) h += '<a class="go" href="#groups">' + esc(u("seeGroups")) + ' ↓</a>';
+        if (b.groups) h += '<a class="go" href="#groups' + (b.session ? '-' + b.session : '') + '"' + (b.session ? ' data-s="' + b.session + '"' : '') + '>' + esc(u("seeGroups")) + ' ↓</a>';
         return h + '</div></div>';
       }).join("");
       return '<section class="day wrap" id="day-' + di + '"><h2>' + esc(L(d.label)) + '</h2><div class="rail">' + blocks + '</div></section>';
     }).join("");
 
+    // a session's "See the working groups" opens that session's list if it is folded
+    document.querySelectorAll(".go[data-s]").forEach(a => a.onclick = () => openSession(a.dataset.s));
     renderGroups();
     renderMe();
 
@@ -687,10 +695,19 @@ const CONFIG = {
     const g = groupByKey(SU.mine[k]); if (!g) return "";
     return esc(u("yourGroup")) + ': ' + esc(L(g.name)) + ' · ' + roomHtml(g[k]);
   }
+  // A session's list folds up once the session is over (tap the heading to
+  // open it again). SU.open[k] = what the person last chose by tapping; it
+  // wins over the clock, so a list they opened never snaps shut under them.
+  SU.open = {}; SU.ended = {};
+  const sessEnded = k => { const b = sessBlock(k); return !!b && new Date() >= b.endAt; };
+  const sessOpen = k => SU.open[k] !== undefined ? SU.open[k] : !sessEnded(k);
+  function openSession(k){ SU.open[k] = true; const d = document.getElementById("groups-" + k); if (d) d.open = true; }
   function renderGroups(){
     $("#group-list").innerHTML = SESS.map(k => {
       const b = sessBlock(k);
-      let h = '<h3 class="sess-h" id="groups-' + k + '">' + esc(u(k)) + (b ? ' · ' + esc(range(b)) : '') + '</h3>';
+      SU.ended[k] = sessEnded(k);
+      let h = '<details class="sess-list" id="groups-' + k + '"' + (sessOpen(k) ? ' open' : '') + '><summary class="sess-h">' + esc(u(k)) + (b ? ' · ' + esc(range(b)) : '')
+        + (SU.ended[k] ? ' <span class="sess-ended">· ' + esc(u("ended")) + '</span>' : '') + '</summary>';
       if (SU.api) h += '<p class="sess-hint">' + esc(u("sessHint")) + '</p>';
       return h + C.groups.map(g => {
         const n = k.slice(1), on = SU.mine[k] === g.key;
@@ -706,8 +723,9 @@ const CONFIG = {
             : '<p class="theme">' + esc(u("agendaSoon")) + '</p>') + '</details>'
           + (SU.api ? '<button class="pick' + (on ? ' on' : '') + '" type="button" aria-pressed="' + on + '"' + (SU.status === "offline" ? ' disabled' : '') + '>' + esc(u(on ? "youreGoing" : "imGoing")) + '</button>' : '')
           + '</div>';
-      }).join("");
+      }).join("") + '</details>';
     }).join("");
+    $("#group-list").querySelectorAll(".sess-list > summary").forEach(sm => sm.onclick = () => { const d = sm.parentNode; SU.open[d.id.slice(7)] = !d.open; });
     $("#group-list").querySelectorAll(".pick").forEach(btn => btn.onclick = () => { const c = btn.closest(".grp"); pick(c.dataset.s, c.dataset.g); });
     document.querySelectorAll(".block .b-mine").forEach(el => { const t = mineText(el.dataset.s); el.hidden = !t; el.innerHTML = t; });
     tick();   // "Right now" names your group during a session
@@ -836,6 +854,8 @@ const CONFIG = {
       if (s.current === b){ badge.hidden = false; badge.classList.add("now"); badge.textContent = u("nowB"); }
       else if (s.next === b && s.phase !== "after"){ badge.hidden = false; badge.classList.add("next"); badge.textContent = u("nextB"); }
     }
+    // fold a session's list the moment it ends (only once, and never one the person opened)
+    if (typeof SU === "object" && SU.ended && SESS.some(k => SU.ended[k] !== sessEnded(k))) renderGroups();
     const st = $("#jump-status");
     if (s.current) st.innerHTML = esc(u("nowB")) + ": <b>" + esc(L(s.current.title)) + "</b>";
     else if (s.next) st.innerHTML = esc(u("next")) + ": <b>" + esc(L(s.next.title)) + "</b> · " + esc(nextWhen(s.next, now));
