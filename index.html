@@ -193,8 +193,11 @@ const CONFIG = {
       es: "🥾 Caminará por un vivero en funcionamiento — use zapatos cómodos y cerrados." },
   ],
 
-  // Links to the event's phone tools, shown at the foot.
+  // Links to the event's phone tools, shown at the foot. sameTab: open in this
+  // tab, so the phone's Back button (or that site's Schedule link) comes back.
   links: [
+    { url: "https://commonground-4un.pages.dev/people", sameTab: true, name: { en: "Who to meet", es: "A quién conocer" },
+      sub: { en: "Common Ground: the people who share your topics", es: "Common Ground: las personas con sus mismos temas" } },
     { url: "https://whatworks.pages.dev/", name: { en: "What Works", es: "Lo Que Funciona" },
       sub: { en: "Plant Health: rate pest products, tank mixes and PGR crop cards", es: "Sanidad Vegetal: califique productos, mezclas de tanque y fichas de PGR" } },
   ],
@@ -625,7 +628,7 @@ const CONFIG = {
     $("#calls").innerHTML = C.contactPhone
       ? '<a href="tel:' + esc(C.contactPhone.replace(/[^0-9+]/g, "")) + '">' + esc(u("call") + " " + (C.contactName || "")) + '</a>'
       : "";   // no call button: everyone already has the contact numbers (Caryn, 09-30)
-    $("#links").innerHTML = (C.links || []).map(l => '<a href="' + esc(l.url) + '" target="_blank" rel="noopener"><b>' + esc(L(l.name)) + ' →</b><span>' + esc(L(l.sub)) + '</span></a>').join("");
+    $("#links").innerHTML = (C.links || []).map(l => '<a href="' + esc(l.url) + '"' + (l.sameTab ? '' : ' target="_blank" rel="noopener"') + '><b>' + esc(L(l.name)) + ' →</b><span>' + esc(L(l.sub)) + '</span></a>').join("");
 
     if (EDIT_MODE) $("#editnote").innerHTML = '<div class="editnote">EDIT MODE — orange chips mark what still needs filling in (the CONFIG block at the top of index.html). Set EDIT_MODE to false before the QR code goes up.</div>';
     tick();
