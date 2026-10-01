@@ -165,26 +165,206 @@ const CONFIG = {
   // stores the sign-ups — a key it does not know is refused.
   groups: [
     { key: "grower", name: { en: "Grower (Perennials + Woodies)", es: "Productores (perennes + leñosas)" },
-      s1: "barn", summary1: null, agenda1: null,
-      s2: "barn", summary2: null, agenda2: null },
+      s1: "barn", 
+      summary1: { en: "Growing the crop: PGRs, timing and problem plants", es: "Producir el cultivo: reguladores de crecimiento, calendario y plantas problema" },
+      agenda1: {
+        en: [
+          "8:00 · Both groups: welcome and introductions (with Plant Health)",
+          "8:10 · Both groups: PGRs — what each nursery uses, rates, timing and results",
+          "8:40 · Crop timing and production planning",
+          "9:05 · Round-table: problem plants and problem-solving plants, including native perennials",
+          "9:25 · Wrap-up and notes for the share-out"],
+        es: [
+          "8:00 · Ambos grupos: bienvenida y presentaciones (con Sanidad Vegetal)",
+          "8:10 · Ambos grupos: reguladores de crecimiento — qué usa cada vivero, dosis, momento y resultados",
+          "8:40 · Calendario del cultivo y planificación de la producción",
+          "9:05 · Mesa redonda: plantas problema y plantas que resuelven problemas, incluidas las perennes nativas",
+          "9:25 · Cierre y notas para la presentación"] },
+      s2: "barn", 
+      summary2: { en: "Water, nutrition and weather", es: "Agua, nutrición y clima" },
+      agenda2: {
+        en: [
+          "10:30 · Introduction",
+          "10:35 · Irrigation: running it and planning it",
+          "11:00 · The water itself: water quality and pond maintenance",
+          "11:15 · In the pot: wetting agents, fertility and liquid feed",
+          "11:35 · Getting through winter: frost protection and overwintering films",
+          "11:50 · Wrap-up and notes for the share-out"],
+        es: [
+          "10:30 · Introducción",
+          "10:35 · Riego: cómo manejarlo y cómo planificarlo",
+          "11:00 · El agua en sí: calidad del agua y mantenimiento del estanque",
+          "11:15 · En la maceta: agentes humectantes, fertilización y fertirriego",
+          "11:35 · Pasar el invierno: protección contra heladas y plásticos de invierno",
+          "11:50 · Cierre y notas para la presentación"] } },
     { key: "plant-health", name: { en: "Plant Health", es: "Sanidad Vegetal" },
-      s1: "barn", summary1: null, agenda1: null,
-      s2: "barn", summary2: null, agenda2: null },
+      s1: "barn", 
+      summary1: { en: "Chemicals: what’s working", es: "Productos químicos: qué está funcionando" },
+      agenda1: {
+        en: [
+          "8:00 · Both groups: welcome and introductions (with Grower)",
+          "8:10 · Both groups: PGRs — what each nursery uses, rates, timing and results",
+          "8:40 · Neonicotinoids: where they still fit, and the alternatives",
+          "8:55 · Rating round on phones (What Works): pests of the moment — box tree moth, red-headed flea beetle, spotted lanternfly, deer and rodents — tank mixes, and tracking results at home",
+          "9:25 · Wrap-up and notes for the share-out"],
+        es: [
+          "8:00 · Ambos grupos: bienvenida y presentaciones (con Productores)",
+          "8:10 · Ambos grupos: reguladores de crecimiento — qué usa cada vivero, dosis, momento y resultados",
+          "8:40 · Neonicotinoides: dónde todavía sirven, y las alternativas",
+          "8:55 · Ronda de calificaciones en el teléfono (Lo Que Funciona): plagas del momento — polilla del boj, escarabajo pulga de cabeza roja, mosca linterna, venados y roedores — mezclas de tanque, y cómo medir resultados en casa",
+          "9:25 · Cierre y notas para la presentación"] },
+      s2: "barn", 
+      summary2: { en: "From forecast to sprayer: planning and logistics", es: "Del pronóstico a la aspersora: planificación y logística" },
+      agenda2: {
+        en: [
+          "10:30 · Introduction",
+          "10:35 · Knowing when: disease forecasting, degree days and insect models",
+          "11:00 · Knowing what’s there: scouting records",
+          "11:20 · Getting it on: spray crews, timing, sprayer calibration and maintenance",
+          "11:50 · Wrap-up and notes for the share-out"],
+        es: [
+          "10:30 · Introducción",
+          "10:35 · Saber cuándo: pronóstico de enfermedades, grados-día y modelos de insectos",
+          "11:00 · Saber qué hay: registros de monitoreo",
+          "11:20 · Aplicarlo: cuadrillas, momento, calibración y mantenimiento de la aspersora",
+          "11:50 · Cierre y notas para la presentación"] } },
     { key: "propagation", name: { en: "Propagation", es: "Propagación" },
-      s1: "headhouse", summary1: null, agenda1: null,
-      s2: "headhouse", summary2: null, agenda2: null },
+      s1: "headhouse", 
+      summary1: { en: "From cutting to rooted liner", es: "Del esqueje a la planta enraizada" },
+      agenda1: {
+        en: [
+          "8:00 · Welcome and introductions",
+          "8:05 · Tour of the greenhouse and propagation areas",
+          "8:30 · Sticking workflows: each nursery shows its method (video or demo)",
+          "9:00 · The rooting environment: media, mist, rooting hormones and VPD",
+          "9:25 · Wrap-up and notes for the share-out"],
+        es: [
+          "8:00 · Bienvenida y presentaciones",
+          "8:05 · Recorrido por el invernadero y las áreas de propagación",
+          "8:30 · Flujo de trabajo para estacar: cada vivero muestra su método (video o demostración)",
+          "9:00 · El ambiente de enraizamiento: sustrato, nebulización, hormonas de enraizamiento y VPD",
+          "9:25 · Cierre y notas para la presentación"] },
+      s2: "headhouse", 
+      summary2: { en: "Timing and troubleshooting problem crops", es: "Calendario y solución de cultivos problema" },
+      agenda2: {
+        en: [
+          "10:30 · Introduction",
+          "10:35 · Propagation crop timing",
+          "10:55 · The problem-crop list: what failed and what finally worked (Sorbaria Matcha Ball, Berberis and more)",
+          "11:30 · From seed: native perennials and seeded crops",
+          "11:50 · Wrap-up and notes for the share-out"],
+        es: [
+          "10:30 · Introducción",
+          "10:35 · Calendario de los cultivos de propagación",
+          "10:55 · La lista de cultivos problema: qué falló y qué por fin funcionó (Sorbaria Matcha Ball, Berberis y más)",
+          "11:30 · Desde semilla: perennes nativas y cultivos de semilla",
+          "11:50 · Cierre y notas para la presentación"] } },
     { key: "shipping", name: { en: "Shipping", es: "Envíos" },
-      s1: "dock", summary1: null, agenda1: null,
-      s2: "dock", summary2: null, agenda2: null },
+      s1: "dock", 
+      summary1: { en: "On the dock: the shipping process", es: "En el muelle: el proceso de envío" },
+      agenda1: {
+        en: [
+          "8:00 · Welcome and introductions (with Lean Management)",
+          "8:05 · Shipping walkthrough (with Lean Management)",
+          "8:45 · How each nursery pulls and stages orders: supermarket and other methods",
+          "9:00 · Measuring the dock: what each nursery counts (units per hour) and what good looks like"],
+        es: [
+          "8:00 · Bienvenida y presentaciones (con Gestión Lean)",
+          "8:05 · Recorrido del área de envíos (con Gestión Lean)",
+          "8:45 · Cómo cada vivero prepara y organiza los pedidos: “supermercado” y otros métodos",
+          "9:00 · Medir el muelle: qué cuenta cada vivero (unidades por hora) y cómo se ve un buen resultado"] },
+      s2: "dock", 
+      summary2: { en: "Out the door: freight, loads, carts and routes", es: "Fuera de la puerta: fletes, cargas, carros y rutas" },
+      agenda2: {
+        en: [
+          "10:30 · Discussion and topic selection: freight methods, load tracking, cart tracking and scanning, route planning",
+          "11:30 · Setting goals for the group",
+          "11:50 · Wrap-up and notes for the share-out"],
+        es: [
+          "10:30 · Discusión y selección de temas: métodos de flete, seguimiento de cargas, seguimiento y escaneo de carros, planificación de rutas",
+          "11:30 · Fijar metas para el grupo",
+          "11:50 · Cierre y notas para la presentación"] } },
     { key: "lean", name: { en: "Lean Management", es: "Gestión Lean" },
-      s1: "dock", summary1: null, agenda1: null,
-      s2: "dock", summary2: null, agenda2: null },
+      s1: "dock", 
+      summary1: { en: "Shipping, the gateway to Lean Management", es: "Envíos, la puerta de entrada a la Gestión Lean" },
+      agenda1: {
+        en: [
+          "8:00 · Welcome and introductions (with Shipping)",
+          "8:05 · Shipping walkthrough (with Shipping)",
+          "8:45 · What is Lean Management? Nick M. leads; Lean breaks off from Shipping",
+          "9:00 · How do you get “lean”? A gemba and kaizen (“change for the better”) demonstration, with a Lego activity"],
+        es: [
+          "8:00 · Bienvenida y presentaciones (con Envíos)",
+          "8:05 · Recorrido del área de envíos (con Envíos)",
+          "8:45 · ¿Qué es la Gestión Lean? La dirige Nick M.; Lean se separa de Envíos",
+          "9:00 · ¿Cómo se llega a ser “lean”? Una demostración de gemba y kaizen (“cambio para mejor”), con una actividad de Lego"] },
+      s2: "dock", 
+      summary2: { en: "Putting the lean mindset to work", es: "Poner en práctica la mentalidad lean" },
+      agenda2: {
+        en: [
+          "10:30 · Debrief of the gemba and kaizen activity",
+          "11:00 · From theory to practice: applying gemba and kaizen to real examples — understanding your buckets, tracking and measuring labor",
+          "11:30 · Setting goals for the group",
+          "11:50 · Wrap-up and notes for the share-out"],
+        es: [
+          "10:30 · Repaso de la actividad de gemba y kaizen",
+          "11:00 · De la teoría a la práctica: aplicar gemba y kaizen a ejemplos reales — entender sus categorías, registrar y medir la mano de obra",
+          "11:30 · Fijar metas para el grupo",
+          "11:50 · Cierre y notas para la presentación"] } },
     { key: "trialing", name: { en: "Trialing", es: "Pruebas de plantas" },
-      s1: "trial", summary1: null, agenda1: null,
-      s2: "conference", summary2: null, agenda2: null },
+      s1: "trial", 
+      summary1: { en: "In the garden: what’s performing", es: "En el jardín: qué está funcionando" },
+      agenda1: {
+        en: [
+          "8:00 · Meet at the trial garden, introductions",
+          "8:10 · Tour of the Overdevest trial gardens",
+          "9:00 · Top 5: each nursery names its best performers of the year, and why",
+          "9:25 · Wrap-up and notes for the share-out"],
+        es: [
+          "8:00 · Encuentro en el jardín de pruebas, presentaciones",
+          "8:10 · Recorrido por los jardines de pruebas de Overdevest",
+          "9:00 · Las 5 mejores: cada vivero nombra sus plantas de mejor desempeño del año, y por qué",
+          "9:25 · Cierre y notas para la presentación"] },
+      s2: "conference", 
+      summary2: { en: "Running a trial program", es: "Cómo llevar un programa de pruebas" },
+      agenda2: {
+        en: [
+          "10:30 · Set the 2027 calendar: meeting times and guest speakers (breeders, trial managers)",
+          "11:20 · Draft a trial SOP: varieties, timeline, evaluations, feedback and decisions — including new selections: David challenges SynRG to focus on developing new selections",
+          "11:50 · Wrap-up and notes for the share-out"],
+        es: [
+          "10:30 · Fijar el calendario 2027: fechas de reunión e invitados (obtentores, encargados de pruebas)",
+          "11:20 · Borrador del procedimiento de pruebas (SOP): variedades, calendario, evaluaciones, comentarios y decisiones — incluidas las nuevas selecciones: David reta a SynRG a enfocarse en desarrollar nuevas selecciones",
+          "11:50 · Cierre y notas para la presentación"] } },
     { key: "marketing", name: { en: "Marketing", es: "Mercadeo" },
-      s1: "conference", summary1: null, agenda1: null,
-      s2: "trial", summary2: null, agenda2: null },
+      s1: "conference", 
+      summary1: { en: "Marketing tools and planning — in person and on Zoom", es: "Herramientas y planificación de mercadeo — en persona y por Zoom" },
+      agenda1: {
+        en: [
+          "8:00 · Welcome and introductions",
+          "8:15 · Tools show and tell: which design programs you use and why — ways to work more efficiently",
+          "8:45 · Goal setting: each nursery picks a goal to work on and report back on at group meetings",
+          "9:10 · Brainstorm for the 2027 group meetings: topics and guest speakers",
+          "9:25 · Wrap-up and notes for the share-out"],
+        es: [
+          "8:00 · Bienvenida y presentaciones",
+          "8:15 · Muestra de herramientas: qué programas de diseño usan y por qué — formas de trabajar más eficientemente",
+          "8:45 · Metas: cada vivero elige una meta para trabajar e informar en las reuniones del grupo",
+          "9:10 · Lluvia de ideas para las reuniones del grupo en 2027: temas e invitados",
+          "9:25 · Cierre y notas para la presentación"] },
+      s2: "trial", 
+      summary2: { en: "Sales support and off-season engagement", es: "Apoyo a ventas y contacto con clientes fuera de temporada" },
+      agenda2: {
+        en: [
+          "10:30 · What sales reps and customers need from marketing (working across departments)",
+          "11:00 · Social media and customer engagement in the off-season: what each nursery does",
+          "11:35 · Brainstorm ideas for each team to try this off-season, and sample marketing calendars",
+          "11:55 · Wrap-up and notes for the share-out"],
+        es: [
+          "10:30 · Qué necesitan de mercadeo los vendedores y los clientes (colaboración entre departamentos)",
+          "11:00 · Redes sociales y contacto con clientes fuera de temporada: qué hace cada vivero",
+          "11:35 · Lluvia de ideas para que cada equipo pruebe esta temporada baja, y ejemplos de calendarios de mercadeo",
+          "11:55 · Cierre y notas para la presentación"] } },
   ],
 
   // Session sign-ups: people find their name (Common Ground's attendee list)
