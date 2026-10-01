@@ -217,7 +217,9 @@ const CONFIG = {
     },
     // dots: a single spot (a place or map extra with dot: "<key>")
     dots: { checkin: [39.433914,-75.3118027], conference: [39.4333818,-75.3111023], entrance: [39.4357345,-75.3083003] },
-    wc: [[39.4340551,-75.3116494],[39.4337278,-75.3122556],[39.432576,-75.3111345]],
+    // a 3rd item = the badge text (default "WC"): several restrooms on the right
+    // (NE) end of the tractor barn, none on the left (Caryn 10-01), one by the dock
+    wc: [[39.4340551,-75.3116494,"WCs"],[39.432576,-75.3111345]],
     // where each name sits, if placed on trace.html ("Place the names"); a spot
     // missing here uses its labelAt / the middle of its outline
     labels: {
@@ -377,7 +379,7 @@ const CONFIG = {
   .pinb{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:2.5px solid #fff;font-weight:800;font-size:13px;color:#1c2b21;
         box-shadow:0 1px 4px rgba(0,0,0,.45);font-family:var(--body)}
   .pinb.sq{border-radius:7px}
-  .pinb.wc{width:28px;height:19px;border-radius:5px;font-size:9.5px}
+  .pinb.wc{width:auto;min-width:28px;padding:0 3px;height:19px;border-radius:5px;font-size:9.5px;white-space:nowrap}
   .maplbl{background:none;border:0;box-shadow:none;padding:0}
   .maplbl-in{display:block;background:rgba(20,30,24,.86);color:#fff;border-left:5px solid #fff;border-radius:4px;font-weight:700;font-size:12.5px;line-height:1.25;padding:3px 7px;white-space:nowrap}
   .maplbl::before{display:none}
@@ -756,7 +758,7 @@ function drawMap(){
     _shapes[key] = poly; return pts;
   };
   for (const x of C.mapExtras || []) {
-    if (x.markers) { (M[x.markers] || []).forEach(p => { all.push(p); badge(p, x.sym, x.color, "wc"); }); continue; }
+    if (x.markers) { (M[x.markers] || []).forEach(p => { const pt = p.slice(0, 2); all.push(pt); badge(pt, p[2] || x.sym, x.color, "wc"); }); continue; }
     if (x.dot) { const pt = dot(x.dot, x.color, x.far); if (pt && (x.map || x.label)) _labels.push(dotLabel(x.dot, pt, x)); continue; }
     const pts = outline(x.area, x.color);
     if (pts && (x.map || x.label)) _labels.push({ at: labelSpot(x.area) || x.labelAt || _mid(pts), text: x.map || x.label, color: x.color, dir: labelSpot(x.area) ? null : x.labelDir, poly: pts });
