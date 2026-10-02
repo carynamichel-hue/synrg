@@ -1,6 +1,6 @@
-# SynRG '26 schedule
+# Syn-RG '26 schedule
 
-The phone schedule for SynRG '26 at Overdevest Nurseries, October 6–8, 2026:
+The phone schedule for Syn-RG '26 at Overdevest Nurseries, October 6–8, 2026:
 live "Right now" panel, all three days, ride labels (🚌 provided / 🚗 on your
 own), the Wednesday working-group rooms, a map of Overdevest, and English /
 Español.
