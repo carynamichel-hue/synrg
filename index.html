@@ -36,9 +36,10 @@ const CONFIG = {
   contactName:  "",
   contactPhone: "",
 
-  // spot: true on a block (the two tours) = its card and "Right now" offer
-  // 📷 Spotted something — a photo + question saved on the phone for a
-  // working group session.
+  // spot on a block (the two tours) = its card and "Right now" offer
+  // 📷 Spotted something — a photo + question saved on the phone.
+  //   spot: true   → "Save it for the working groups" (before Wednesday's sessions)
+  //   spot: "note" → "Save a note" (Lucas comes after the sessions — Caryn 10-02)
 
   // ---- PLACES -------------------------------------------------------------
   // Every "where" on the schedule points at one of these by its id.
@@ -120,7 +121,7 @@ const CONFIG = {
           title: { en: "Lunch with special guest Adept Ag", es: "Almuerzo con el invitado especial Adept Ag" } },
         { start: "13:30", end: "14:00", where: "lucas", ride: "provided",
           title: { en: "Ride to Lucas Greenhouses", es: "Transporte a Lucas Greenhouses" } },
-        { start: "14:00", end: "17:00", where: "lucas", spot: true,
+        { start: "14:00", end: "17:00", where: "lucas", spot: "note",
           title: { en: "Tour of Lucas Greenhouses", es: "Recorrido de Lucas Greenhouses" } },
         { start: "17:00", end: "18:00", where: "brewery", ride: "provided",
           title: { en: "Ride to Farmers & Bankers Brewing", es: "Transporte a Farmers & Bankers Brewing" } },
@@ -600,6 +601,9 @@ const CONFIG = {
   .spot-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;min-height:46px;font:700 16px var(--body);border-radius:8px;border:2px solid var(--g);background:var(--g);color:#fff;cursor:pointer}
   .spot-fab{position:fixed;right:14px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:21;display:flex;align-items:center;gap:7px;background:var(--g);color:#fff;border:3px solid #fff;
             border-radius:999px;padding:9px 15px 9px 11px;font:700 14px/1.1 var(--body);box-shadow:0 4px 14px rgba(28,43,33,.45);cursor:pointer}
+  .spot-fab{transition:transform .25s ease, opacity .25s ease}
+  /* over the map it would sit on the satellite picture (Caryn 10-02): it steps aside */
+  .spot-fab.away{transform:translateX(140%);opacity:0;pointer-events:none}
   .spot-fab .ic{font-size:22px;line-height:1}
   .spot-fab .n{background:var(--amber);color:var(--ink);border-radius:999px;font-size:12px;padding:1px 7px;margin-left:2px}
   .spots{padding-top:30px}
@@ -810,7 +814,7 @@ const CONFIG = {
           before: "Starts", notStarted: "Not started yet", firstUp: "First up", wrap: "That’s a wrap", thanks: "Thanks for coming — safe travels!",
           between: "Between sessions", free: "Free time", next: "Next", left: "left", nowB: "Now", nextB: "Next", call: "Call",
           add: "Add", hr: "hr", min: "min", overnight: "See you tomorrow", tomorrow: "Tomorrow",
-          spotFab: "Spotted<br>something?", spotBtn: "📷 Spotted something? Save it for the working groups",
+          spotFab: "Spotted<br>something?", spotBtn: "📷 Spotted something? Save it for the working groups", spotBtnNote: "📷 Spotted something? Save a note",
           spots: "Things you spotted", spotsSub: "Photos and questions from the tours, kept on this phone only — bring them to the working group sessions.",
           spotsEmpty: "Nothing yet. On the tours, tap 📷 to save a photo and a question, then mark which working group to bring it to.",
           spotTitle: "Something you spotted", photoOpt: "A photo is optional", photoOptSub: "A name and a note are enough",
@@ -841,7 +845,7 @@ const CONFIG = {
           before: "Empieza", notStarted: "Todavía no empieza", firstUp: "Primero", wrap: "¡Eso es todo!", thanks: "Gracias por venir — ¡buen viaje!",
           between: "Entre sesiones", free: "Tiempo libre", next: "Siguiente", left: "restantes", nowB: "Ahora", nextB: "Sigue", call: "Llamar",
           add: "Falta", hr: "h", min: "min", overnight: "Hasta mañana", tomorrow: "Mañana",
-          spotFab: "¿Vio<br>algo?", spotBtn: "📷 ¿Vio algo? Guárdelo para los grupos de trabajo",
+          spotFab: "¿Vio<br>algo?", spotBtn: "📷 ¿Vio algo? Guárdelo para los grupos de trabajo", spotBtnNote: "📷 ¿Vio algo? Guarde una nota",
           spots: "Lo que usted vio", spotsSub: "Fotos y preguntas de los recorridos, guardadas solo en este teléfono — llévelas a las sesiones de los grupos de trabajo.",
           spotsEmpty: "Nada todavía. En los recorridos, toque 📷 para guardar una foto y una pregunta, y marque a qué grupo de trabajo llevarla.",
           spotTitle: "Algo que vio", photoOpt: "La foto es opcional", photoOptSub: "Un nombre y una nota bastan",
@@ -934,7 +938,7 @@ const CONFIG = {
         if (b.stops) h += '<ul class="stops">' + b.stops.map(s => '<li><b>' + esc(L(s.name)) + '</b>' + (s.details ? '<p>' + esc(L(s.details)) + '</p>' : '') + '</li>').join("") + '</ul>';
         if (b.session) h += '<p class="b-mine" data-s="' + b.session + '" hidden></p>';
         if (b.groups) h += '<a class="go" href="#groups' + (b.session ? '-' + b.session : '') + '"' + (b.session ? ' data-s="' + b.session + '"' : '') + '>' + esc(u("seeGroups")) + ' ↓</a>';
-        if (b.spot) h += '<button type="button" class="spot-btn" data-spot>' + esc(u("spotBtn")) + '</button>';
+        if (b.spot) h += '<button type="button" class="spot-btn" data-spot>' + esc(u(b.spot === "note" ? "spotBtnNote" : "spotBtn")) + '</button>';
         return h + '</div></div>';
       }).join("");
       return '<section class="day wrap" id="day-' + di + '"><h2>' + esc(L(d.label)) + '</h2><div class="rail">' + blocks + '</div></section>';
@@ -1266,6 +1270,12 @@ const CONFIG = {
     if (btn) { btn.disabled = false; btn.textContent = sp.photo ? u("retake") : u("takePhoto"); }
   });
   $("#spot-fab").addEventListener("click", newSpot);
+  // over the map the button would cover the satellite picture: while the map
+  // is on screen it slides off to the side, and comes back past it
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(es => es.forEach(e => $("#spot-fab").classList.toggle("away", e.isIntersecting)), { threshold: 0.15 })
+      .observe(document.getElementById("sitemap"));
+  }
 
   let spotMsg = "", spotMsgBad = false, spotCopy = false;
   function renderSpots(){
@@ -1366,7 +1376,7 @@ const CONFIG = {
         (c.ride ? '<span class="ride ' + c.ride + '">' + esc(u(c.ride)) + '</span>' : '') +
         (c.session && mineText(c.session) ? '<p class="b-mine">' + mineText(c.session) + '</p>' : '') +
         (c.session && SU.mine[c.session] ? spotsForHtml(SU.mine[c.session]) : '') +
-        (c.spot ? '<button type="button" class="spot-btn" data-spot>' + esc(u("spotBtn")) + '</button>' : '') +
+        (c.spot ? '<button type="button" class="spot-btn" data-spot>' + esc(u(c.spot === "note" ? "spotBtnNote" : "spotBtn")) + '</button>' : '') +
         '<div class="meter"><span style="width:' + pct.toFixed(1) + '%"></span></div><p class="meter-label">' + esc(dur(mins(c.endAt - now)) + " " + u("left")) + '</p>' +
         (s.next ? '<p class="up-next">' + esc(u("next")) + ' ' + esc(nextWhen(s.next, now)) + ': <b>' + esc(L(s.next.title)) + '</b></p>' : '');
     } else {
