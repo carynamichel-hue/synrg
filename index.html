@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Syn-RG '26 Schedule</title>
+<title>SynRG '26 Schedule</title>
 <meta name="theme-color" content="#1c2b21">
-<meta name="description" content="Schedule, rides and map for Syn-RG '26 at Overdevest Nurseries, October 6-8, 2026.">
+<meta name="description" content="Schedule, rides and map for SynRG '26 at Overdevest Nurseries, October 6-8, 2026.">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <script src="vendor/leaflet/leaflet.js"></script>
@@ -27,7 +27,7 @@
 const EDIT_MODE = false;
 
 const CONFIG = {
-  eventName: "Syn-RG '26",
+  eventName: "SynRG '26",
   orgName:   { en: "Hosted by Overdevest Nurseries", es: "Organizado por Overdevest Nurseries" },
   dateLabel: { en: "October 6–8, 2026", es: "6–8 de octubre de 2026" },
 
@@ -337,11 +337,11 @@ const CONFIG = {
       agenda2: {
         en: [
           "10:30 · Set the 2027 calendar: meeting times and guest speakers (breeders, trial managers)",
-          "11:20 · Draft a trial SOP: varieties, timeline, evaluations, feedback and decisions — including new selections: David challenges Syn-RG to focus on developing new selections",
+          "11:20 · Draft a trial SOP: varieties, timeline, evaluations, feedback and decisions — including new selections: David challenges SynRG to focus on developing new selections",
           "11:50 · Wrap-up and notes for the share-out"],
         es: [
           "10:30 · Fijar el calendario 2027: fechas de reunión e invitados (obtentores, encargados de pruebas)",
-          "11:20 · Borrador del procedimiento de pruebas (SOP): variedades, calendario, evaluaciones, comentarios y decisiones — incluidas las nuevas selecciones: David reta a Syn-RG a enfocarse en desarrollar nuevas selecciones",
+          "11:20 · Borrador del procedimiento de pruebas (SOP): variedades, calendario, evaluaciones, comentarios y decisiones — incluidas las nuevas selecciones: David reta a SynRG a enfocarse en desarrollar nuevas selecciones",
           "11:50 · Cierre y notas para la presentación"] } },
     { key: "marketing", name: { en: "Marketing", es: "Mercadeo" },
       s1: "conference", 
@@ -482,7 +482,7 @@ const CONFIG = {
   .masthead{background:var(--ink);color:var(--wash);padding-top:16px;padding-bottom:16px;border-bottom:4px solid var(--amber)}
   .masthead .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
   .masthead .org{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin:0 0 6px}
-  .masthead h1{font-family:var(--display);font-size:clamp(34px,10vw,48px);line-height:.95;letter-spacing:.02em;margin:0;font-weight:700}  /* the name as the event spells it: Syn-RG (Caryn 10-02), not all caps */
+  .masthead h1{font-family:var(--display);font-size:clamp(34px,10vw,48px);line-height:.95;letter-spacing:.02em;margin:0;font-weight:700}  /* the name as the event spells it: SynRG, not SYNRG (Caryn 10-02) */
   .masthead .when{font-family:var(--mono);font-size:13px;color:rgba(243,246,241,.85);margin:8px 0 0}
   .lang{background:transparent;color:var(--wash);border:1.5px solid rgba(243,246,241,.6);border-radius:99px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;flex:none}
 
@@ -733,7 +733,7 @@ const CONFIG = {
     <div class="top">
       <div>
         <p class="org" id="org"></p>
-        <h1 id="event-name">Syn-RG '26</h1>
+        <h1 id="event-name">SynRG '26</h1>
         <p class="when" id="when"></p>
       </div>
       <button class="lang" type="button" id="lang-btn">Español</button>
@@ -830,7 +830,7 @@ const CONFIG = {
           photosDl: "{n} photos downloaded.", photosNone: "No photos yet.", photosFail: "Could not save the photos.",
           photosOnly: "{n} photos are only on this phone — save them before you clear it.",
           grpSpots: "📷 Your {n} tour {notes} for this group:", note1: "note", noteN: "notes", seeThem: "see them",
-          spotsTitle: "Syn-RG ’26 — things I spotted", photoTaken: "photo on my phone" },
+          spotsTitle: "SynRG ’26 — things I spotted", photoTaken: "photo on my phone" },
     es: { lang: "English", now: "Ahora", jump: "Ir a ahora", groups: "Grupos de trabajo",
           groupsSub: "Miércoles 7 de octubre — elija un grupo para cada sesión, para que cada líder sepa cuántas personas esperar.",
           findName: "Primero, busque su nombre", typeName: "Empiece a escribir su nombre", noMatch: "No aparece — revise cómo lo escribió, o agregue su nombre abajo.",
@@ -861,7 +861,7 @@ const CONFIG = {
           photosDl: "{n} fotos descargadas.", photosNone: "Todavía no hay fotos.", photosFail: "No se pudieron guardar las fotos.",
           photosOnly: "{n} fotos están solo en este teléfono — guárdelas antes de borrarlo.",
           grpSpots: "📷 Sus {n} {notes} del recorrido para este grupo:", note1: "nota", noteN: "notas", seeThem: "verlas",
-          spotsTitle: "Syn-RG ’26 — lo que vi", photoTaken: "foto en mi teléfono" },
+          spotsTitle: "SynRG ’26 — lo que vi", photoTaken: "foto en mi teléfono" },
   };
   const KEY = "synrg26.lang";
   let lang = "en";
@@ -1342,7 +1342,7 @@ const CONFIG = {
     }
     try { if (navigator.share) { await navigator.share({ title, text: body }); return say(files.length ? u("sentNoP") : u("sentT"), !!files.length); } }
     catch (e) { if (e && e.name === "AbortError") return; }
-    try { download("Syn-RG-26-my-notes.txt", body); return say(u("dl") + (files.length ? " " + u("photosOnly").replace("{n}", files.length) : ""), false, true); }
+    try { download("SynRG-26-my-notes.txt", body); return say(u("dl") + (files.length ? " " + u("photosOnly").replace("{n}", files.length) : ""), false, true); }
     catch (e) { return say("", false, true); }
   }
   // photos ALONE (no text) — that is what makes iPhone offer "Save images"

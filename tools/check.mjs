@@ -75,7 +75,7 @@ const shot = async (name) => { const h = await js('document.documentElement.scro
 await at('2026-09-30T10:00:00-04:00')
 ok('before the event: not started, first up = arrival', /Not started yet/.test(await now()) && /Arrival and welcome/.test(await now()), await now())
 ok('fits a phone', await fits())
-ok('the event is spelled Syn-RG — on screen (innerText, so no all-caps styling), in the tab title, nowhere SynRG', (await js('document.getElementById("event-name").innerText')) === "Syn-RG '26" && (await js('document.title')) === "Syn-RG '26 Schedule" && !/SynRG|SYNRG/.test(await js('document.documentElement.outerHTML')))
+ok('the event reads SynRG — on screen (innerText, so not all caps), in the tab title; never SYNRG or Syn-RG (Caryn 10-02)', (await js('document.getElementById("event-name").innerText')) === "SynRG '26" && (await js('document.title')) === "SynRG '26 Schedule" && !/SYNRG|Syn-RG/.test(await js('document.body.innerText')))
 ok('three days, all on the page', (await js('document.querySelectorAll(".day").length')) === 3)
 ok('every ride block is labelled', (await js('document.querySelectorAll(".ride").length')) === 7, await js('document.querySelectorAll(".ride").length'))
 ok('provided vs own counts', (await js('document.querySelectorAll(".ride.provided").length')) === 4 && (await js('document.querySelectorAll(".ride.own").length')) === 3)
@@ -276,7 +276,7 @@ await js('localStorage.removeItem("fakeOff"); localStorage.removeItem("synrg26.m
   await js('Object.defineProperty(navigator, "share", { value: undefined, configurable: true }); 1')
   await js('document.getElementById("spot-send").click(); 1'); await sleep(600)
   const copied = await js('document.getElementById("spot-copy")?.value || ""')
-  ok('Send to myself with no share sheet: the notes appear to copy, nothing lost', /Syn-RG ’26 — things I spotted/.test(copied) && /1\. Rooting tunnel misting/.test(copied) && /How often does the mist run/.test(copied) && /Follow up in: Propagation/.test(copied) && /photo on my phone — spotted-1-Rooting-tunnel-misting\.jpg/.test(copied), copied)
+  ok('Send to myself with no share sheet: the notes appear to copy, nothing lost', /SynRG ’26 — things I spotted/.test(copied) && /1\. Rooting tunnel misting/.test(copied) && /How often does the mist run/.test(copied) && /Follow up in: Propagation/.test(copied) && /photo on my phone — spotted-1-Rooting-tunnel-misting\.jpg/.test(copied), copied)
   ok('…and it says the photos are still only on this phone', /1 photos are only on this phone/.test(await js('document.getElementById("spot-acts").textContent')))
   ok('"Save my 1 photos" is offered', /Save my 1 photos/.test(await js('document.getElementById("spot-acts").textContent')))
 
