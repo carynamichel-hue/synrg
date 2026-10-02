@@ -46,6 +46,7 @@ const CONFIG = {
   // n             = the number on the map
   // area / dot    = its outline in map.areas, or its single spot in map.dots
   // color         = the outline's colour on the map
+  // hint          = a short how-to-get-in, shown wherever the place is named
   // map           = the short name written on the map. labelAt moves it to a clear
   //                 patch beside its spot (the spots by the barn are too close
   //                 together for every name to sit on its own outline)
@@ -55,7 +56,8 @@ const CONFIG = {
     headhouse:  { n: 3, onSite: true, area: "headhouse",  color: "#fd7e14", map: { en: "Headhouse", es: "Headhouse" }, name: { en: "Headhouse", es: "Headhouse" } },
     dock:       { n: 4, onSite: true, area: "dock",       color: "#cc5de8", map: { en: "Loading dock", es: "Área de carga" }, name: { en: "Loading dock", es: "Área de carga" } },
     trial:      { n: 5, onSite: true, area: "trial",      color: "#51cf66", map: { en: "Trial garden", es: "Jardín de pruebas" }, labelAt: [39.434005, -75.311011], name: { en: "Trial garden (around the main office)", es: "Jardín de pruebas (alrededor de la oficina principal)" } },
-    conference: { n: 6, onSite: true, dot: "conference",  color: "#ffffff", map: { en: "Conference room", es: "Sala de conferencias" }, labelDir: "bottom", name: { en: "Conference room (in the main office)", es: "Sala de conferencias (en la oficina principal)" } },
+    conference: { n: 6, onSite: true, dot: "conference",  color: "#ffffff", map: { en: "Conference room", es: "Sala de conferencias" }, labelDir: "bottom", name: { en: "Conference room (in the main office)", es: "Sala de conferencias (en la oficina principal)" },
+                  hint: { en: "Use the rear entrance", es: "Entre por la puerta de atrás" } },
     hotel:      { onSite: false, name: "Fairfield Inn & Suites", url: "" },
     lucas:      { onSite: false, name: "Lucas Greenhouses", url: "https://www.lucasgreenhouses.com/" },
     brewery:    { onSite: false, name: "Farmers & Bankers Brewing", url: "https://farmersandbankersbrewing.com/" },
@@ -110,7 +112,7 @@ const CONFIG = {
           details: { en: "Dive deeper into the questions and discussions sparked by Tuesday’s nursery tour. See the table below for where each group meets.", es: "Profundice en las preguntas y conversaciones que surgieron en el recorrido del vivero del martes. Vea la tabla abajo para saber dónde se reúne cada grupo." } },
         { start: "09:30", end: "09:45", where: "barn",
           title: { en: "Break", es: "Descanso" },
-          note: { en: "WF partner sales update in the conference room (for WF partners).", es: "Actualización de ventas de socios WF en la sala de conferencias (para los socios WF)." } },
+          note: { en: "WF partner sales update in the conference room — main office, use the rear entrance (for WF partners).", es: "Actualización de ventas de socios WF en la sala de conferencias — oficina principal, entre por la puerta de atrás (para los socios WF)." } },
         { start: "09:45", end: "10:30", where: "barn",
           title: { en: "Harnessing AI to Solve Problems", es: "Usar la IA para resolver problemas" } },
         { start: "10:30", end: "12:00", where: "", groups: true, session: "s2",
@@ -553,6 +555,7 @@ const CONFIG = {
   .grp .lbl{font-family:var(--mono);font-size:12px;color:var(--slate);padding-top:2px}
   .grp .room{font-weight:700;color:var(--g-deep)}
   .grp .room a{color:inherit}
+  .hint{font-weight:600;color:#8a4b00;white-space:nowrap}
   .grp .theme{color:var(--slate);font-size:14.5px}
   .grp .sess{margin-top:8px;border-top:1px solid var(--line);padding-top:4px}
   .grp .sum{margin:4px 0 0;font-size:15px;color:var(--g-deep)}
@@ -893,6 +896,7 @@ const CONFIG = {
   const todayIndex = now => { const local = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,10); return C.days.findIndex(d => d.date === local); };
 
   /* ---------- where ---------- */
+  const hintHtml = p => p && p.hint ? ' <span class="hint">· ' + esc(L(p.hint)) + '</span>' : '';
   function whereHtml(id){
     if (!id) return "";
     const p = C.places[id]; if (!p) return esc(id);
@@ -901,7 +905,7 @@ const CONFIG = {
       if (p.url) return '📍 <a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + name + '</a>';
       return '📍 ' + name;
     }
-    return '📍 ' + (C.showMap ? '<a href="#place-' + id + '">' + name + '</a>' : name);
+    return '📍 ' + (C.showMap ? '<a href="#place-' + id + '">' + name + '</a>' : name) + hintHtml(p);
   }
 
   /* ---------- render everything (again on a language switch) ---------- */
@@ -954,7 +958,7 @@ const CONFIG = {
       $("#map-section").hidden = false;
       drawMap();
       const places = Object.entries(C.places).filter(([, p]) => p.onSite).sort((a, b) => a[1].n - b[1].n);
-      $("#legend").innerHTML = places.map(([id, p]) => '<li id="place-' + id + '" data-area="' + esc(p.area || p.dot || "") + '"><span class="dot' + (p.dot ? ' round' : '') + '" style="background:' + esc(p.color) + '"></span>' + esc(L(p.name)) + '</li>').join("")
+      $("#legend").innerHTML = places.map(([id, p]) => '<li id="place-' + id + '" data-area="' + esc(p.area || p.dot || "") + '"><span class="dot' + (p.dot ? ' round' : '') + '" style="background:' + esc(p.color) + '"></span><span>' + esc(L(p.name)) + hintHtml(p) + '</span></li>').join("")
         + (C.mapExtras || []).filter(x => x.name).map(x => '<li data-area="' + esc(x.area || x.dot || "") + '"><span class="dot' + (x.markers ? ' wc' : '') + (x.dot ? ' round' : '') + '" style="background:' + esc(x.color) + '">' + (x.markers ? 'WC' : '') + '</span>' + esc(L(x.name)) + '</li>').join("");
       document.querySelectorAll("#legend li[data-area]").forEach(li => { if (li.dataset.area) li.onclick = () => focusArea(li.dataset.area); });
       $("#map-note").textContent = lang === "es" ? "Toque un lugar de la lista para verlo en el mapa. Deslice el mapa con un dedo; ⌂ lo muestra entero otra vez. El mapa satelital necesita señal." : "Tap a spot in the list to find it on the map. Drag the map with a finger to move it; ⌂ shows the whole map again. The satellite picture needs a signal.";
@@ -987,7 +991,7 @@ const CONFIG = {
   const SESS = ["s1", "s2"];
   const sessBlock = k => all.find(b => b.session === k);
   const groupByKey = k => C.groups.find(g => g.key === k);
-  const roomHtml = id => { const p = C.places[id]; const n = esc(L(p && p.name)); return '📍 ' + (C.showMap ? '<a href="#place-' + id + '">' + n + '</a>' : n); };
+  const roomHtml = id => { const p = C.places[id]; const n = esc(L(p && p.name)); return '📍 ' + (C.showMap ? '<a href="#place-' + id + '">' + n + '</a>' : n) + hintHtml(p); };
   function mineText(k){
     const g = groupByKey(SU.mine[k]); if (!g) return "";
     return esc(u("yourGroup")) + ': ' + esc(L(g.name)) + ' · ' + roomHtml(g[k]);
