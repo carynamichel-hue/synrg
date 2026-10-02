@@ -51,9 +51,9 @@ const CONFIG = {
   //                 together for every name to sit on its own outline)
   places: {
     checkin:    { n: 1, onSite: true, dot: "checkin",     color: "#e03131", map: { en: "Check-in", es: "Registro" }, labelAt: [39.434358, -75.311869], name: { en: "Check-in", es: "Registro" } },
-    barn:       { n: 2, onSite: true, area: "barn",       color: "#f2b33d", map: { en: "Tractor barn", es: "Granero" }, labelAt: [39.433985, -75.312781], name: { en: "Tractor barn", es: "Granero de tractores" } },
+    barn:       { n: 2, onSite: true, area: "barn",       color: "#f2b33d", map: { en: "Tractor barn", es: "Garaje" }, labelAt: [39.433985, -75.312781], name: { en: "Tractor barn", es: "Garaje de tractores" } },
     headhouse:  { n: 3, onSite: true, area: "headhouse",  color: "#fd7e14", map: { en: "Headhouse", es: "Headhouse" }, name: { en: "Headhouse", es: "Headhouse" } },
-    dock:       { n: 4, onSite: true, area: "dock",       color: "#cc5de8", map: { en: "Loading dock", es: "Muelle de carga" }, name: { en: "Loading dock", es: "Muelle de carga" } },
+    dock:       { n: 4, onSite: true, area: "dock",       color: "#cc5de8", map: { en: "Loading dock", es: "Área de carga" }, name: { en: "Loading dock", es: "Área de carga" } },
     trial:      { n: 5, onSite: true, area: "trial",      color: "#51cf66", map: { en: "Trial garden", es: "Jardín de pruebas" }, labelAt: [39.434005, -75.311011], name: { en: "Trial garden (around the main office)", es: "Jardín de pruebas (alrededor de la oficina principal)" } },
     conference: { n: 6, onSite: true, dot: "conference",  color: "#ffffff", map: { en: "Conference room", es: "Sala de conferencias" }, labelDir: "bottom", name: { en: "Conference room (in the main office)", es: "Sala de conferencias (en la oficina principal)" } },
     hotel:      { onSite: false, name: "Fairfield Inn & Suites", url: "" },
@@ -125,7 +125,7 @@ const CONFIG = {
         { start: "17:00", end: "18:00", where: "brewery", ride: "provided",
           title: { en: "Ride to Farmers & Bankers Brewing", es: "Transporte a Farmers & Bankers Brewing" } },
         { start: "18:00", end: "20:00", where: "brewery",
-          title: { en: "Dinner at the brewery", es: "Cena en la cervecería" } },
+          title: { en: "Dinner at the brewery", es: "Cena en el bar" } },
         { start: "20:00", end: "20:30", where: "", ride: "provided",
           title: { en: "Rides back", es: "Regreso" },
           stops: [
@@ -268,7 +268,7 @@ const CONFIG = {
           "11:50 · Cierre y notas para la presentación"] } },
     { key: "shipping", name: { en: "Shipping", es: "Envíos" },
       s1: "dock", 
-      summary1: { en: "On the dock: the shipping process", es: "En el muelle: el proceso de envío" },
+      summary1: { en: "On the dock: the shipping process", es: "En el área de carga: el proceso de envío" },
       agenda1: {
         en: [
           "8:00 · Welcome and introductions (with Lean Management)",
@@ -279,7 +279,7 @@ const CONFIG = {
           "8:00 · Bienvenida y presentaciones (con Gestión Lean)",
           "8:05 · Recorrido del área de envíos (con Gestión Lean)",
           "8:45 · Cómo cada vivero prepara y organiza los pedidos: “supermercado” y otros métodos",
-          "9:00 · Medir el muelle: qué cuenta cada vivero (unidades por hora) y cómo se ve un buen resultado"] },
+          "9:00 · Medir el área de carga: qué cuenta cada vivero (unidades por hora) y cómo se ve un buen resultado"] },
       s2: "dock", 
       summary2: { en: "Out the door: freight, loads, carts and routes", es: "Fuera de la puerta: fletes, cargas, carros y rutas" },
       agenda2: {
@@ -437,7 +437,7 @@ const CONFIG = {
   // On the map but not schedule places: shown on the picture and in the legend.
   // area = an outline above; dot = a single spot in map.dots.
   mapExtras: [
-    { sym: "P",  area: "parking", color: "#339af0", map: { en: "Parking", es: "Estacionamiento" }, name: { en: "Parking — across from the tractor barn", es: "Estacionamiento — frente al granero de tractores" } },
+    { sym: "P",  area: "parking", color: "#339af0", map: { en: "Parking", es: "Estacionamiento" }, name: { en: "Parking — across from the tractor barn", es: "Estacionamiento — frente al garaje de tractores" } },
     { sym: "WC", markers: "wc",   color: "#0f766e", name: { en: "Portable restrooms", es: "Baños portátiles" } },
     // the map does not zoom out to include the entrance when it opens (far: true)
     { sym: "➜",  dot: "entrance", far: true, color: "#1c2b21", map: { en: "➜ Entrance", es: "➜ Entrada" }, name: { en: "Farm entrance (off the main road)", es: "Entrada del vivero (desde la carretera)" } },
