@@ -36,10 +36,8 @@ const CONFIG = {
   contactName:  "",
   contactPhone: "",
 
-  // spot on a block (the two tours) = its card and "Right now" offer
-  // 📷 Spotted something — a photo + question saved on the phone.
-  //   spot: true   → "Save it for the working groups" (before Wednesday's sessions)
-  //   spot: "note" → "Save a note" (Lucas comes after the sessions — Caryn 10-02)
+  // spot: true on a block (the two tours) = its card and "Right now" offer
+  // 📷 "Spotted something? Save a photo or note" — kept on the phone.
 
   // ---- PLACES -------------------------------------------------------------
   // Every "where" on the schedule points at one of these by its id.
@@ -84,7 +82,8 @@ const CONFIG = {
           details: { en: "Make your own way to Overdevest Nurseries.", es: "Llegue por su cuenta a Overdevest Nurseries." } },
         { start: "14:15", end: "17:00", where: "barn", spot: true,
           title: { en: "Nursery tour", es: "Recorrido del vivero" },
-          details: { en: "On foot and by wagon. See some of the nursery's highlights and talk with the people who run them — a time for discovery and discussion. Ask questions as you go, and for a deeper dive, Wednesday's working groups dig into the details.", es: "A pie y en carreta. Vea algunos de los puntos destacados del vivero y converse con las personas que los manejan — un momento para descubrir y conversar. Pregunte lo que quiera durante el recorrido, y para profundizar, los grupos de trabajo del miércoles entran en los detalles." } },
+          details: { en: "On foot and by wagon. See some of the nursery's highlights — a time for discovery and discussion. For a deeper dive, Wednesday's working group sessions dig into the details.", es: "A pie y en carreta. Vea algunos de los puntos destacados del vivero — un momento para descubrir y conversar. Para profundizar, las sesiones de los grupos de trabajo del miércoles entran en los detalles." },
+          note: { en: "Not sure who to ask, or which working group covers a topic? Ask Caryn.", es: "¿No sabe a quién preguntar, o qué grupo de trabajo trata un tema? Pregúntele a Caryn." } },
         { start: "17:00", end: "17:30", where: "trial",
           title: { en: "Mixer", es: "Convivio" },
           details: { en: "Drinks and getting to know each other.", es: "Bebidas y convivencia." } },
@@ -121,7 +120,7 @@ const CONFIG = {
           title: { en: "Lunch with special guest Adept Ag", es: "Almuerzo con el invitado especial Adept Ag" } },
         { start: "13:30", end: "14:00", where: "lucas", ride: "provided",
           title: { en: "Ride to Lucas Greenhouses", es: "Transporte a Lucas Greenhouses" } },
-        { start: "14:00", end: "17:00", where: "lucas", spot: "note",
+        { start: "14:00", end: "17:00", where: "lucas", spot: true,
           title: { en: "Tour of Lucas Greenhouses", es: "Recorrido de Lucas Greenhouses" } },
         { start: "17:00", end: "18:00", where: "brewery", ride: "provided",
           title: { en: "Ride to Farmers & Bankers Brewing", es: "Transporte a Farmers & Bankers Brewing" } },
@@ -814,7 +813,7 @@ const CONFIG = {
           before: "Starts", notStarted: "Not started yet", firstUp: "First up", wrap: "That’s a wrap", thanks: "Thanks for coming — safe travels!",
           between: "Between sessions", free: "Free time", next: "Next", left: "left", nowB: "Now", nextB: "Next", call: "Call",
           add: "Add", hr: "hr", min: "min", overnight: "See you tomorrow", tomorrow: "Tomorrow",
-          spotFab: "Spotted<br>something?", spotBtn: "📷 Spotted something? Save a photo or note", spotBtnNote: "📷 Spotted something? Save a note",
+          spotFab: "Spotted<br>something?", spotBtn: "📷 Spotted something? Save a photo or note",
           spots: "Things you spotted", spotsSub: "Photos and notes from the tours, kept on this phone only — handy for following up in the working groups.",
           spotsEmpty: "Nothing yet. On the tours, tap 📷 to save a photo and a note of anything you want to remember or follow up on.",
           spotTitle: "Something you spotted", photoOpt: "A photo is optional", photoOptSub: "A name and a note are enough",
@@ -845,7 +844,7 @@ const CONFIG = {
           before: "Empieza", notStarted: "Todavía no empieza", firstUp: "Primero", wrap: "¡Eso es todo!", thanks: "Gracias por venir — ¡buen viaje!",
           between: "Entre sesiones", free: "Tiempo libre", next: "Siguiente", left: "restantes", nowB: "Ahora", nextB: "Sigue", call: "Llamar",
           add: "Falta", hr: "h", min: "min", overnight: "Hasta mañana", tomorrow: "Mañana",
-          spotFab: "¿Vio<br>algo?", spotBtn: "📷 ¿Vio algo? Guarde una foto o nota", spotBtnNote: "📷 ¿Vio algo? Guarde una nota",
+          spotFab: "¿Vio<br>algo?", spotBtn: "📷 ¿Vio algo? Guarde una foto o nota",
           spots: "Lo que usted vio", spotsSub: "Fotos y notas de los recorridos, guardadas solo en este teléfono — útiles para seguir el tema en los grupos de trabajo.",
           spotsEmpty: "Nada todavía. En los recorridos, toque 📷 para guardar una foto y una nota de lo que quiera recordar o seguir.",
           spotTitle: "Algo que vio", photoOpt: "La foto es opcional", photoOptSub: "Un nombre y una nota bastan",
@@ -938,7 +937,7 @@ const CONFIG = {
         if (b.stops) h += '<ul class="stops">' + b.stops.map(s => '<li><b>' + esc(L(s.name)) + '</b>' + (s.details ? '<p>' + esc(L(s.details)) + '</p>' : '') + '</li>').join("") + '</ul>';
         if (b.session) h += '<p class="b-mine" data-s="' + b.session + '" hidden></p>';
         if (b.groups) h += '<a class="go" href="#groups' + (b.session ? '-' + b.session : '') + '"' + (b.session ? ' data-s="' + b.session + '"' : '') + '>' + esc(u("seeGroups")) + ' ↓</a>';
-        if (b.spot) h += '<button type="button" class="spot-btn" data-spot>' + esc(u(b.spot === "note" ? "spotBtnNote" : "spotBtn")) + '</button>';
+        if (b.spot) h += '<button type="button" class="spot-btn" data-spot>' + esc(u("spotBtn")) + '</button>';
         return h + '</div></div>';
       }).join("");
       return '<section class="day wrap" id="day-' + di + '"><h2>' + esc(L(d.label)) + '</h2><div class="rail">' + blocks + '</div></section>';
@@ -1376,7 +1375,7 @@ const CONFIG = {
         (c.ride ? '<span class="ride ' + c.ride + '">' + esc(u(c.ride)) + '</span>' : '') +
         (c.session && mineText(c.session) ? '<p class="b-mine">' + mineText(c.session) + '</p>' : '') +
         (c.session && SU.mine[c.session] ? spotsForHtml(SU.mine[c.session]) : '') +
-        (c.spot ? '<button type="button" class="spot-btn" data-spot>' + esc(u(c.spot === "note" ? "spotBtnNote" : "spotBtn")) + '</button>' : '') +
+        (c.spot ? '<button type="button" class="spot-btn" data-spot>' + esc(u("spotBtn")) + '</button>' : '') +
         '<div class="meter"><span style="width:' + pct.toFixed(1) + '%"></span></div><p class="meter-label">' + esc(dur(mins(c.endAt - now)) + " " + u("left")) + '</p>' +
         (s.next ? '<p class="up-next">' + esc(u("next")) + ' ' + esc(nextWhen(s.next, now)) + ': <b>' + esc(L(s.next.title)) + '</b></p>' : '');
     } else {
