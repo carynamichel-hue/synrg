@@ -36,6 +36,10 @@ const CONFIG = {
   contactName:  "",
   contactPhone: "",
 
+  // spot: true on a block (the two tours) = its card and "Right now" offer
+  // 📷 Spotted something — a photo + question saved on the phone for a
+  // working group session.
+
   // ---- PLACES -------------------------------------------------------------
   // Every "where" on the schedule points at one of these by its id.
   // onSite: true  = at Overdevest (shown on the map when it is drawn)
@@ -77,7 +81,7 @@ const CONFIG = {
         { start: "14:00", end: "14:15", where: "checkin", ride: "own",
           title: { en: "Arrival and welcome", es: "Llegada y bienvenida" },
           details: { en: "Make your own way to Overdevest Nurseries.", es: "Llegue por su cuenta a Overdevest Nurseries." } },
-        { start: "14:15", end: "17:00", where: "barn",
+        { start: "14:15", end: "17:00", where: "barn", spot: true,
           title: { en: "Nursery tour", es: "Recorrido del vivero" },
           details: { en: "Starts at the tractor barn. Want to know more about something you see on the tour? The working group sessions on Wednesday go into it in more depth — bring your questions to those sessions.", es: "Empieza en el granero de tractores. ¿Quiere saber más de algo que ve en el recorrido? Las sesiones de los grupos de trabajo del miércoles lo tratan más a fondo — traiga sus preguntas a esas sesiones." } },
         { start: "17:00", end: "17:30", where: "trial",
@@ -116,7 +120,7 @@ const CONFIG = {
           title: { en: "Lunch with special guest Adept Ag", es: "Almuerzo con el invitado especial Adept Ag" } },
         { start: "13:30", end: "14:00", where: "lucas", ride: "provided",
           title: { en: "Ride to Lucas Greenhouses", es: "Transporte a Lucas Greenhouses" } },
-        { start: "14:00", end: "17:00", where: "lucas",
+        { start: "14:00", end: "17:00", where: "lucas", spot: true,
           title: { en: "Tour of Lucas Greenhouses", es: "Recorrido de Lucas Greenhouses" } },
         { start: "17:00", end: "18:00", where: "brewery", ride: "provided",
           title: { en: "Ride to Farmers & Bankers Brewing", es: "Transporte a Farmers & Bankers Brewing" } },
@@ -382,6 +386,8 @@ const CONFIG = {
       es: "🚌 Fíjese en las etiquetas de transporte: “Transporte incluido” significa que nosotros lo llevamos; “Por su cuenta” significa que usted llega por sí mismo." },
     { en: "🥾 You will be walking around a working nursery — wear comfortable, closed-toe shoes.",
       es: "🥾 Caminará por un vivero en funcionamiento — use zapatos cómodos y cerrados." },
+    { en: "📷 Spotted something on a tour? Tap the camera button to save a photo and your question, and mark which working group to bring it to on Wednesday. It stays on your phone only.",
+      es: "📷 ¿Vio algo en un recorrido? Toque el botón de la cámara para guardar una foto y su pregunta, y marque a qué grupo de trabajo llevarla el miércoles. Se queda solo en su teléfono." },
   ],
 
   // Links to the event's phone tools, shown at the foot. sameTab: open in this
@@ -590,6 +596,57 @@ const CONFIG = {
   @keyframes meflash{50%{box-shadow:0 0 0 4px var(--amber)}}
   .b-mine{font-weight:700;color:var(--g-deep);margin:8px 0 0}
 
+  /* 📷 spotted something */
+  .spot-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:10px;min-height:46px;font:700 16px var(--body);border-radius:8px;border:2px solid var(--g);background:var(--g);color:#fff;cursor:pointer}
+  .spot-fab{position:fixed;right:14px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:21;display:flex;align-items:center;gap:7px;background:var(--g);color:#fff;border:3px solid #fff;
+            border-radius:999px;padding:9px 15px 9px 11px;font:700 14px/1.1 var(--body);box-shadow:0 4px 14px rgba(28,43,33,.45);cursor:pointer}
+  .spot-fab .ic{font-size:22px;line-height:1}
+  .spot-fab .n{background:var(--amber);color:var(--ink);border-radius:999px;font-size:12px;padding:1px 7px;margin-left:2px}
+  .spots{padding-top:30px}
+  .spots h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;font-size:24px;margin:0 0 6px;color:var(--g-deep)}
+  .spots .sub{margin:0 0 12px;color:var(--slate);font-size:15px}
+  .spot-row{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:9px;box-shadow:var(--shadow);font:15px var(--body);color:var(--ink);cursor:pointer}
+  .spot-row .th{flex:none;width:64px;height:64px;border-radius:7px;background:var(--wash-deep) center/cover no-repeat;display:grid;place-items:center;font-size:24px}
+  .spot-row b{display:block;font-size:16px}
+  .spot-row .meta{display:block;font-size:13px;color:var(--slate);margin-top:2px}
+  .spot-row .for{display:block;font-size:13.5px;font-weight:700;color:var(--g);margin-top:3px}
+  .spot-row .nt{display:block;font-size:14px;color:var(--g-deep);margin-top:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .spot-acts{display:grid;gap:8px;margin-top:6px}
+  .spot-acts button{min-height:46px;font:700 16px var(--body);border-radius:8px;border:2px solid var(--g);background:var(--card);color:var(--g-deep);cursor:pointer}
+  .spot-acts button.pri{background:var(--g);color:#fff}
+  .spot-msg{font-size:14.5px;color:var(--g-deep);margin:4px 0 0}
+  .spot-msg.bad{color:#b42318;font-weight:600}
+  .spot-copy{width:100%;min-height:160px;font:14px var(--mono);border:1.5px solid var(--line);border-radius:8px;padding:8px;margin-top:6px}
+  .grp-spots{margin:8px 0 0;padding:8px 10px;border-radius:8px;background:var(--amber-soft);font-size:14.5px;color:#5b3a04}
+  .grp-spots a{color:inherit;font-weight:700}
+  .sheetbg{position:fixed;inset:0;z-index:40;background:rgba(20,30,24,.55);display:flex;align-items:flex-end;justify-content:center}
+  .sheetbg[hidden]{display:none}
+  .sheet{background:var(--wash);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:0 0 calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(0,0,0,.3)}
+  .sheet-top{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--wash);padding:12px 14px}
+  .sheet-top b{flex:1;font-family:var(--display);text-transform:uppercase;letter-spacing:.04em;font-size:19px}
+  .sheet-top button{background:none;border:1.5px solid rgba(243,246,241,.6);color:var(--wash);border-radius:8px;width:40px;height:40px;font-size:18px;cursor:pointer}
+  .sheet-in{padding:12px 14px}
+  .sheet .where{font-family:var(--mono);font-size:12.5px;color:var(--slate);margin:0 0 10px}
+  .sheet .ph{width:100%;aspect-ratio:4/3;border-radius:10px;background:var(--wash-deep) center/cover no-repeat;display:grid;place-items:center;text-align:center;color:var(--slate);font-size:14.5px;padding:10px}
+  .sheet .ph b{display:block;color:var(--g-deep);font-size:16px}
+  .sheet label{display:block;font-weight:700;font-size:15px;margin:14px 0 6px;color:var(--g-deep)}
+  .sheet input[type=text],.sheet textarea{width:100%;font:16px var(--body);padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:#1c2b21}
+  .sheet textarea{min-height:96px;resize:vertical}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chips button{min-height:40px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--g-soft);background:#fff;color:var(--ink);font:15px var(--body);cursor:pointer;text-align:left}
+  .chips button.on{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+  .chips button small{opacity:.8}
+  .saved{font-size:13.5px;color:var(--slate);margin:12px 0 0}
+  .del{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+  .del .link{background:none;border:0;padding:6px 0;color:#b42318;font:600 15px var(--body);text-decoration:underline;cursor:pointer}
+  .del p{color:#b42318;font-size:14.5px;margin:0 0 8px}
+  .del .row2{display:flex;gap:8px}
+  .del .row2 button{flex:1;min-height:44px;border-radius:8px;font:700 15px var(--body);cursor:pointer;border:2px solid var(--line);background:#fff}
+  .del .row2 .warn{background:#b42318;border-color:#b42318;color:#fff}
+  .done{display:block;width:100%;margin-top:14px;min-height:50px;border:0;border-radius:8px;background:var(--g);color:#fff;font:700 17px var(--body);cursor:pointer}
+  .toast{position:fixed;left:50%;bottom:calc(140px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;background:var(--ink);color:#fff;border-radius:999px;padding:9px 16px;font-size:14.5px;max-width:90vw;text-align:center}
+  .toast[hidden]{display:none}
+
   /* map */
   .map-section{padding-top:30px}
   .map-frame{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:var(--shadow)}
@@ -655,7 +712,7 @@ const CONFIG = {
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
   @media print{
-    .jumpbar,.now-section,.editnote,.days,.lang{display:none}
+    .jumpbar,.now-section,.editnote,.days,.lang,.spot-fab,.spot-btn,.spots{display:none}
     body{background:#fff;padding:0;font-size:11pt}
     .card,.grp,.info li{box-shadow:none}
     .block,.grp{break-inside:avoid}
@@ -698,6 +755,13 @@ const CONFIG = {
     <div id="group-list"></div>
   </section>
 
+  <section class="spots wrap" id="spots">
+    <h2 id="lbl-spots">Things you spotted</h2>
+    <p class="sub" id="lbl-spots-sub"></p>
+    <div id="spot-list"></div>
+    <div class="spot-acts" id="spot-acts"></div>
+  </section>
+
   <section class="map-section wrap" id="map-section" hidden>
     <h2 id="lbl-map">Map of Overdevest</h2>
     <div class="map-frame"><div id="sitemap" role="img" aria-label="Satellite map of Overdevest Nurseries with the event spots outlined"></div></div>
@@ -713,6 +777,11 @@ const CONFIG = {
 
   <section class="links wrap" id="links"></section>
 </main>
+
+<button type="button" class="spot-fab" id="spot-fab" aria-label="Spotted something? Save a photo and a note"><span class="ic">📷</span><span id="spot-fab-lb">Spotted<br>something?</span></button>
+<div class="sheetbg" id="spot-sheet" hidden></div>
+<input type="file" id="spot-cam" accept="image/*" capture="environment" style="position:absolute;left:-9999px;width:1px;height:1px" aria-label="Take a photo">
+<div class="toast" id="toast" hidden role="status"></div>
 
 <div class="jumpbar">
   <div class="status" id="jump-status"></div>
@@ -740,7 +809,25 @@ const CONFIG = {
           provided: "🚌 Ride provided", own: "🚗 On your own", web: "Website", onMap: "On the map", seeGroups: "See the working groups",
           before: "Starts", notStarted: "Not started yet", firstUp: "First up", wrap: "That’s a wrap", thanks: "Thanks for coming — safe travels!",
           between: "Between sessions", free: "Free time", next: "Next", left: "left", nowB: "Now", nextB: "Next", call: "Call",
-          add: "Add", hr: "hr", min: "min", overnight: "See you tomorrow", tomorrow: "Tomorrow" },
+          add: "Add", hr: "hr", min: "min", overnight: "See you tomorrow", tomorrow: "Tomorrow",
+          spotFab: "Spotted<br>something?", spotBtn: "📷 Spotted something? Save it for the working groups",
+          spots: "Things you spotted", spotsSub: "Photos and questions from the tours, kept on this phone only — bring them to the working group sessions.",
+          spotsEmpty: "Nothing yet. On the tours, tap 📷 to save a photo and a question, then mark which working group to bring it to.",
+          spotTitle: "Something you spotted", photoOpt: "A photo is optional", photoOptSub: "A name and a note are enough",
+          takePhoto: "📷 Take a photo", retake: "📷 Retake photo", adding: "Adding…", whatIs: "What is it?", whatPh: "Name it, or where you saw it",
+          noteL: "Your note or question", notePh: "What caught your eye? What do you want to ask?",
+          bringTo: "Bring it to which working group?", notSure: "Not sure yet", yourGrp: "your group",
+          savedTyping: "✓ Saved as you type — private, only on this phone. Just close when you’re done.",
+          del: "Delete this", delQ: "Delete “{n}”?", delPhoto: "The photo goes with it — it was taken here, so it is not in your camera roll and this is the only copy.",
+          delPlain: "This cannot be undone.", keep: "Keep it", delYes: "Delete", deleted: "Deleted", done: "Done", noName: "(no name yet)",
+          photoAdded: "Photo added", photoFail: "This phone would not store the photo — it may be full", photoBad: "That photo could not be read",
+          forG: "Bring to:", hasPhoto: "photo", sendMe: "📤 Send my notes to myself", savePhotos: "💾 Save my {n} photos to my camera roll",
+          sentP: "Sent — check it arrived (photos ride along).", sentT: "Sent.", sentNoP: "The notes went, but this phone would not attach the photos — tap “Save my photos” too.",
+          dl: "Saved as a file in your downloads.", copyHere: "Copy your notes from here:", photosSaved: "Photos handed to your phone — choose “Save images”.",
+          photosDl: "{n} photos downloaded.", photosNone: "No photos yet.", photosFail: "Could not save the photos.",
+          photosOnly: "{n} photos are only on this phone — save them before you clear it.",
+          grpSpots: "📷 Your {n} tour {notes} for this group:", note1: "note", noteN: "notes", seeThem: "see them",
+          spotsTitle: "SynRG ’26 — things I spotted", photoTaken: "photo on my phone" },
     es: { lang: "English", now: "Ahora", jump: "Ir a ahora", groups: "Grupos de trabajo",
           groupsSub: "Miércoles 7 de octubre — elija un grupo para cada sesión, para que cada líder sepa cuántas personas esperar.",
           findName: "Primero, busque su nombre", typeName: "Empiece a escribir su nombre", noMatch: "No aparece — revise cómo lo escribió, o agregue su nombre abajo.",
@@ -753,7 +840,25 @@ const CONFIG = {
           provided: "🚌 Transporte incluido", own: "🚗 Por su cuenta", web: "Sitio web", onMap: "En el mapa", seeGroups: "Ver los grupos de trabajo",
           before: "Empieza", notStarted: "Todavía no empieza", firstUp: "Primero", wrap: "¡Eso es todo!", thanks: "Gracias por venir — ¡buen viaje!",
           between: "Entre sesiones", free: "Tiempo libre", next: "Siguiente", left: "restantes", nowB: "Ahora", nextB: "Sigue", call: "Llamar",
-          add: "Falta", hr: "h", min: "min", overnight: "Hasta mañana", tomorrow: "Mañana" },
+          add: "Falta", hr: "h", min: "min", overnight: "Hasta mañana", tomorrow: "Mañana",
+          spotFab: "¿Vio<br>algo?", spotBtn: "📷 ¿Vio algo? Guárdelo para los grupos de trabajo",
+          spots: "Lo que usted vio", spotsSub: "Fotos y preguntas de los recorridos, guardadas solo en este teléfono — llévelas a las sesiones de los grupos de trabajo.",
+          spotsEmpty: "Nada todavía. En los recorridos, toque 📷 para guardar una foto y una pregunta, y marque a qué grupo de trabajo llevarla.",
+          spotTitle: "Algo que vio", photoOpt: "La foto es opcional", photoOptSub: "Un nombre y una nota bastan",
+          takePhoto: "📷 Tomar una foto", retake: "📷 Tomar otra foto", adding: "Agregando…", whatIs: "¿Qué es?", whatPh: "Póngale nombre, o dónde lo vio",
+          noteL: "Su nota o pregunta", notePh: "¿Qué le llamó la atención? ¿Qué quiere preguntar?",
+          bringTo: "¿A qué grupo de trabajo llevarla?", notSure: "Todavía no sé", yourGrp: "su grupo",
+          savedTyping: "✓ Se guarda mientras escribe — privado, solo en este teléfono. Cierre cuando termine.",
+          del: "Borrar esto", delQ: "¿Borrar “{n}”?", delPhoto: "La foto se borra también — se tomó aquí, así que no está en su galería y esta es la única copia.",
+          delPlain: "No se puede deshacer.", keep: "Conservar", delYes: "Borrar", deleted: "Borrado", done: "Listo", noName: "(sin nombre todavía)",
+          photoAdded: "Foto agregada", photoFail: "Este teléfono no guardó la foto — puede estar lleno", photoBad: "No se pudo leer esa foto",
+          forG: "Llevar a:", hasPhoto: "foto", sendMe: "📤 Enviarme mis notas", savePhotos: "💾 Guardar mis {n} fotos en la galería",
+          sentP: "Enviado — revise que llegó (las fotos van incluidas).", sentT: "Enviado.", sentNoP: "Las notas se enviaron, pero este teléfono no adjuntó las fotos — toque también “Guardar mis fotos”.",
+          dl: "Guardado como archivo en sus descargas.", copyHere: "Copie sus notas desde aquí:", photosSaved: "Fotos entregadas a su teléfono — elija “Guardar imágenes”.",
+          photosDl: "{n} fotos descargadas.", photosNone: "Todavía no hay fotos.", photosFail: "No se pudieron guardar las fotos.",
+          photosOnly: "{n} fotos están solo en este teléfono — guárdelas antes de borrarlo.",
+          grpSpots: "📷 Sus {n} {notes} del recorrido para este grupo:", note1: "nota", noteN: "notas", seeThem: "verlas",
+          spotsTitle: "SynRG ’26 — lo que vi", photoTaken: "foto en mi teléfono" },
   };
   const KEY = "synrg26.lang";
   let lang = "en";
@@ -808,6 +913,9 @@ const CONFIG = {
     $("#lbl-groups").textContent = u("groups");
     $("#lbl-groups-sub").textContent = u("groupsSub");
     $("#lbl-map").textContent = u("map");
+    $("#lbl-spots").textContent = u("spots");
+    $("#lbl-spots-sub").textContent = u("spotsSub");
+    $("#spot-fab-lb").innerHTML = u("spotFab");
     $("#lbl-info").textContent = u("info");
 
     const ti = todayIndex(new Date());
@@ -826,6 +934,7 @@ const CONFIG = {
         if (b.stops) h += '<ul class="stops">' + b.stops.map(s => '<li><b>' + esc(L(s.name)) + '</b>' + (s.details ? '<p>' + esc(L(s.details)) + '</p>' : '') + '</li>').join("") + '</ul>';
         if (b.session) h += '<p class="b-mine" data-s="' + b.session + '" hidden></p>';
         if (b.groups) h += '<a class="go" href="#groups' + (b.session ? '-' + b.session : '') + '"' + (b.session ? ' data-s="' + b.session + '"' : '') + '>' + esc(u("seeGroups")) + ' ↓</a>';
+        if (b.spot) h += '<button type="button" class="spot-btn" data-spot>' + esc(u("spotBtn")) + '</button>';
         return h + '</div></div>';
       }).join("");
       return '<section class="day wrap" id="day-' + di + '"><h2>' + esc(L(d.label)) + '</h2><div class="rail">' + blocks + '</div></section>';
@@ -833,8 +942,10 @@ const CONFIG = {
 
     // a session's "See the working groups" opens that session's list if it is folded
     document.querySelectorAll(".go[data-s]").forEach(a => a.onclick = () => openSession(a.dataset.s));
+    document.querySelectorAll("#days [data-spot]").forEach(bt => bt.onclick = newSpot);
     renderGroups();
     renderMe();
+    renderSpots();
 
     if (C.showMap){
       $("#map-section").hidden = false;
@@ -904,6 +1015,7 @@ const CONFIG = {
           + '<details class="agenda"><summary>' + esc(u("agenda")) + '</summary>' + (items.length
             ? '<ul>' + items.map(t => '<li>' + esc(t) + '</li>').join("") + '</ul>'
             : '<p class="theme">' + esc(u("agendaSoon")) + '</p>') + '</details>'
+          + spotsForHtml(g.key)
           + (SU.api ? '<button class="pick' + (on ? ' on' : '') + '" type="button" aria-pressed="' + on + '"' + (SU.status === "offline" ? ' disabled' : '') + '>' + esc(u(on ? "youreGoing" : "imGoing")) + '</button>' : '')
           + '</div>';
       }).join("") + '</details>';
@@ -1001,6 +1113,241 @@ const CONFIG = {
     renderGroups();
   }
 
+  /* ---------- 📷 spotted something ----------
+     A photo + a name + a note/question, stamped with the block it was taken
+     in (the tours) and tagged with a working group to bring it to. Ported
+     from PlantPicks' "something I spotted", with its lessons:
+     · the RECORD lives in localStorage, the PHOTO (a Blob) in IndexedDB —
+       a few photos would fill localStorage and take the notes with them;
+     · a photo taken here is NOT in the camera roll (iOS keeps a file-input
+       capture to the page), so this phone holds the only copy: Delete warns,
+       and "Save my photos" hands them over as files ALONE (that is what makes
+       iOS offer "Save images");
+     · notes are shared as TEXT in the message body, never a .txt attachment
+       (iOS Mail "sent and never arrived", 08-25);
+     · a share sheet the person dismisses is not a failure;
+     · blanks (opened and closed) are pruned;
+     · nothing is ever sent anywhere by the page itself. */
+  const SPOT_KEY = "synrg26.spots";
+  let spots = rd(SPOT_KEY) || [];
+  const saveSpots = () => wr(SPOT_KEY, spots);
+  const urls = {};
+  let idb = null;
+  function db(){
+    if (idb) return idb;
+    idb = new Promise(res => {
+      if (!window.indexedDB) return res(null);
+      let rq; try { rq = indexedDB.open("synrg26", 1); } catch (e) { return res(null); }
+      rq.onupgradeneeded = () => { if (!rq.result.objectStoreNames.contains("photos")) rq.result.createObjectStore("photos"); };
+      rq.onsuccess = () => res(rq.result); rq.onerror = () => res(null);
+    });
+    return idb;
+  }
+  async function idbDo(mode, fn){
+    const d = await db(); if (!d) return null;
+    return new Promise(res => {
+      try {
+        const tx = d.transaction("photos", mode), st = tx.objectStore("photos"); let out = null;
+        const r = fn(st); if (r) r.onsuccess = () => { out = r.result; };
+        tx.oncomplete = () => res(mode === "readwrite" ? true : out); tx.onerror = () => res(null); tx.onabort = () => res(null);
+      } catch (e) { res(null); }
+    });
+  }
+  const putPhoto = (id, blob) => idbDo("readwrite", st => st.put(blob, id));
+  const getPhoto = id => idbDo("readonly", st => st.get(id));
+  const delPhoto = id => idbDo("readwrite", st => st.delete(id));
+  async function photoUrl(id){
+    if (urls[id]) return urls[id];
+    const b = await getPhoto(id); if (!b) return null;
+    return (urls[id] = URL.createObjectURL(b));
+  }
+  function dropUrl(id){ if (urls[id]) { try { URL.revokeObjectURL(urls[id]); } catch (e) {} delete urls[id]; } }
+  // phone photos are 3–8 MB: shrink to ~1400 px JPEG before storing
+  async function shrink(file){
+    let img = null;
+    try { if (window.createImageBitmap) img = await createImageBitmap(file, { imageOrientation: "from-image" }); } catch (e) { img = null; }
+    if (!img) img = await new Promise(res => { const u0 = URL.createObjectURL(file), im = new Image(); im.onload = () => { URL.revokeObjectURL(u0); res(im); }; im.onerror = () => { URL.revokeObjectURL(u0); res(null); }; im.src = u0; });
+    if (!img || !img.width) return null;
+    const k = Math.min(1, 1400 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    const blob = await new Promise(res => c.toBlob(res, "image/jpeg", 0.72));
+    return blob && file.size && blob.size > file.size && file.size < 900 * 1024 ? file : blob;
+  }
+  const isEmpty = sp => !String(sp.name || "").trim() && !String(sp.note || "").trim() && !sp.photo && !sp.g;
+  async function pruneEmpty(){
+    const dead = spots.filter(isEmpty); if (!dead.length) return;
+    for (const sp of dead) await delPhoto(sp.id);
+    spots = spots.filter(sp => !isEmpty(sp)); saveSpots();
+  }
+  const spotWhere = sp => {
+    const b = all.find(x => x.id === sp.blk), d = new Date(sp.at);
+    const day = C.days.findIndex(x => x.date === new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10));
+    return (b ? L(b.title) + " · " : "") + (day >= 0 ? L(C.days[day].short) + " " : d.toLocaleDateString() + " ") + fmt(d);
+  };
+  const spotFor = (key) => spots.filter(sp => sp.g === key);
+  function spotsForHtml(key){
+    const list = spotFor(key); if (!list.length) return "";
+    const n = list.length;
+    return '<p class="grp-spots">' + esc(u("grpSpots").replace("{n}", n).replace("{notes}", u(n === 1 ? "note1" : "noteN"))) + ' '
+      + list.map(sp => '<b>' + esc(sp.name || u("noName")) + '</b>').join(", ") + ' · <a href="#spots">' + esc(u("seeThem")) + '</a></p>';
+  }
+  function toast(t){ const el = $("#toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 2600); }
+
+  // a new one, stamped with what is on right now (the tour it was taken on)
+  function newSpot(){
+    const now = new Date(), s = state(now);
+    const sp = { id: "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), at: now.getTime(), blk: s.current ? s.current.id : "", name: "", note: "", g: "", photo: false };
+    spots.push(sp); saveSpots();
+    openSpot(sp.id);
+  }
+  let openId = null, confirmDel = false;
+  async function openSpot(id){
+    const sp = spots.find(x => x.id === id); if (!sp) return;
+    openId = id; confirmDel = false;
+    const bg = $("#spot-sheet");
+    const myGroups = SESS.map(k => SU.mine[k]).filter(Boolean);
+    const groups = C.groups.slice().sort((a, b) => (myGroups.includes(b.key) ? 1 : 0) - (myGroups.includes(a.key) ? 1 : 0));
+    bg.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="spot-h"><div class="sheet-top"><b id="spot-h">📷 ' + esc(u("spotTitle")) + '</b><button type="button" id="spot-x" aria-label="Close">✕</button></div><div class="sheet-in">'
+      + '<p class="where">' + esc(spotWhere(sp)) + '</p>'
+      + '<div class="ph" id="spot-ph"><div><b>📷 ' + esc(u("photoOpt")) + '</b>' + esc(u("photoOptSub")) + '</div></div>'
+      + '<button type="button" class="spot-btn" id="spot-take">' + esc(sp.photo ? u("retake") : u("takePhoto")) + '</button>'
+      + '<label for="spot-name">' + esc(u("whatIs")) + '</label><input type="text" id="spot-name" maxlength="120" placeholder="' + esc(u("whatPh")) + '">'
+      + '<label for="spot-note">' + esc(u("noteL")) + '</label><textarea id="spot-note" maxlength="2000" placeholder="' + esc(u("notePh")) + '"></textarea>'
+      + '<label>' + esc(u("bringTo")) + '</label><div class="chips" id="spot-g">'
+      + '<button type="button" data-g="">' + esc(u("notSure")) + '</button>'
+      + groups.map(g => '<button type="button" data-g="' + esc(g.key) + '">' + esc(L(g.name)) + (myGroups.includes(g.key) ? ' <small>· ' + esc(u("yourGrp")) + '</small>' : '') + '</button>').join("")
+      + '</div><p class="saved">' + esc(u("savedTyping")) + '</p><div class="del" id="spot-del"></div>'
+      + '<button type="button" class="done" id="spot-done">' + esc(u("done")) + '</button></div></div>';
+    bg.hidden = false; document.body.style.overflow = "hidden"; $("#spot-fab").hidden = true;
+    $("#spot-name").value = sp.name; $("#spot-note").value = sp.note;
+    const set = (patch) => { Object.assign(sp, patch); saveSpots(); };
+    $("#spot-name").oninput = e => set({ name: e.target.value });
+    $("#spot-note").oninput = e => set({ note: e.target.value });
+    const chips = () => bg.querySelectorAll("#spot-g button").forEach(b => { const on = b.dataset.g === (sp.g || ""); b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+    bg.querySelectorAll("#spot-g button").forEach(b => b.onclick = () => { set({ g: b.dataset.g }); chips(); });
+    chips();
+    $("#spot-take").onclick = () => $("#spot-cam").click();
+    $("#spot-x").onclick = closeSpot; $("#spot-done").onclick = closeSpot;
+    // the press must START on the backdrop to close (a keyboard opening between
+    // press and release once shut PlantPicks' sheet on every tap of a field)
+    let downOnBg = false;
+    bg.onpointerdown = e => { downOnBg = e.target === bg; };
+    bg.onclick = e => { if (e.target === bg && downOnBg) closeSpot(); downOnBg = false; };
+    renderDel(sp);
+    if (sp.photo) { const url = await photoUrl(sp.id); if (url && openId === sp.id) showPhoto(url); }
+  }
+  function showPhoto(url){ const ph = $("#spot-ph"); if (ph) { ph.style.backgroundImage = 'url("' + url + '")'; ph.innerHTML = ""; } }
+  function renderDel(sp){
+    const box = $("#spot-del"); if (!box) return;
+    if (!confirmDel) { box.innerHTML = '<button type="button" class="link" id="spot-d1">' + esc(u("del")) + '</button>'; $("#spot-d1").onclick = () => { confirmDel = true; renderDel(sp); }; return; }
+    box.innerHTML = '<p><b>' + esc(u("delQ").replace("{n}", sp.name || u("noName"))) + '</b> ' + esc(sp.photo ? u("delPhoto") : u("delPlain")) + '</p>'
+      + '<div class="row2"><button type="button" id="spot-keep">' + esc(u("keep")) + '</button><button type="button" class="warn" id="spot-d2">' + esc(u("delYes")) + '</button></div>';
+    $("#spot-keep").onclick = () => { confirmDel = false; renderDel(sp); };
+    $("#spot-d2").onclick = async () => { const id = sp.id; closeSpot(true); await delPhoto(id); dropUrl(id); spots = spots.filter(x => x.id !== id); saveSpots(); afterSpots(); toast(u("deleted")); };
+  }
+  async function closeSpot(skipPrune){
+    openId = null;
+    const bg = $("#spot-sheet"); bg.hidden = true; bg.innerHTML = ""; document.body.style.overflow = ""; $("#spot-fab").hidden = false;
+    if (skipPrune !== true) await pruneEmpty();
+    afterSpots();
+  }
+  function afterSpots(){ renderSpots(); renderGroups(); }
+  $("#spot-cam").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0]; e.target.value = "";
+    const sp = spots.find(x => x.id === openId); if (!file || !sp) return;
+    const btn = $("#spot-take"); if (btn) { btn.disabled = true; btn.textContent = u("adding"); }
+    let blob = null; try { blob = await shrink(file); } catch (er) { blob = null; }
+    // never say "added" unless it was stored — this phone holds the only copy
+    const ok = blob ? await putPhoto(sp.id, blob) : null;
+    if (ok) { sp.photo = true; sp.bytes = blob.size; saveSpots(); dropUrl(sp.id); const url = await photoUrl(sp.id); if (url && openId === sp.id) showPhoto(url); toast(u("photoAdded"));
+      try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (er) {} }
+    else toast("⚠ " + u(blob ? "photoFail" : "photoBad"));
+    if (btn) { btn.disabled = false; btn.textContent = sp.photo ? u("retake") : u("takePhoto"); }
+  });
+  $("#spot-fab").addEventListener("click", newSpot);
+
+  let spotMsg = "", spotMsgBad = false, spotCopy = false;
+  function renderSpots(){
+    const list = $("#spot-list"), acts = $("#spot-acts");
+    const nPhotos = spots.filter(sp => sp.photo).length;
+    if (!spots.length) { list.innerHTML = '<p class="sub">' + esc(u("spotsEmpty")) + '</p>'; acts.innerHTML = ""; }
+    else {
+      list.innerHTML = spots.slice().sort((a, b) => a.at - b.at).map(sp => {
+        const g = sp.g && C.groups.find(x => x.key === sp.g);
+        return '<button type="button" class="spot-row" data-id="' + esc(sp.id) + '"><span class="th" data-th="' + esc(sp.id) + '">' + (sp.photo ? '' : '📝') + '</span><span>'
+          + '<b>' + esc(sp.name || u("noName")) + '</b><span class="meta">' + esc(spotWhere(sp)) + '</span>'
+          + (g ? '<span class="for">→ ' + esc(L(g.name)) + '</span>' : '')
+          + (sp.note ? '<span class="nt">' + esc(sp.note) + '</span>' : '') + '</span></button>';
+      }).join("");
+      list.querySelectorAll(".spot-row").forEach(b => b.onclick = () => openSpot(b.dataset.id));
+      spots.filter(sp => sp.photo).forEach(async sp => { const url = await photoUrl(sp.id); const th = list.querySelector('[data-th="' + sp.id + '"]'); if (url && th) th.style.backgroundImage = 'url("' + url + '")'; });
+      acts.innerHTML = '<button type="button" class="pri" id="spot-send">' + esc(u("sendMe")) + '</button>'
+        + (nPhotos ? '<button type="button" id="spot-save">' + esc(u("savePhotos").replace("{n}", nPhotos)) + '</button>' : '')
+        + (spotMsg ? '<p class="spot-msg' + (spotMsgBad ? ' bad' : '') + '">' + esc(spotMsg) + '</p>' : '')
+        + (spotCopy ? '<label class="spot-msg" for="spot-copy">' + esc(u("copyHere")) + '</label><textarea class="spot-copy" id="spot-copy" readonly></textarea>' : '');
+      if (spotCopy) $("#spot-copy").value = spotText();
+      $("#spot-send").onclick = sendSpots;
+      const sv = $("#spot-save"); if (sv) sv.onclick = saveSpotPhotos;
+    }
+    const n = spots.length;
+    $("#spot-fab").querySelectorAll(".n").forEach(x => x.remove());
+    if (n) $("#spot-fab").insertAdjacentHTML("beforeend", '<span class="n">' + n + '</span>');
+  }
+  function spotText(){
+    const out = [u("spotsTitle"), ""];
+    spots.slice().sort((a, b) => a.at - b.at).forEach((sp, i) => {
+      const g = sp.g && C.groups.find(x => x.key === sp.g);
+      out.push((i + 1) + ". " + (sp.name || u("noName")));
+      out.push("   " + spotWhere(sp));
+      if (g) out.push("   " + u("forG") + " " + L(g.name));
+      if (sp.note) out.push("   " + sp.note.replace(/\n/g, "\n   "));
+      if (sp.photo) out.push("   [" + u("photoTaken") + " — " + fileName(sp, i) + "]");
+      out.push("");
+    });
+    return out.join("\n");
+  }
+  const fileName = (sp, i) => "spotted-" + (i + 1) + "-" + ((sp.name || "photo").replace(/[^a-z0-9 _-]/gi, "").trim().replace(/\s+/g, "-").slice(0, 30) || "photo") + ".jpg";
+  async function photoFiles(){
+    const out = [], list = spots.slice().sort((a, b) => a.at - b.at);
+    for (let i = 0; i < list.length; i++) {
+      const sp = list[i]; if (!sp.photo) continue;
+      const b = await getPhoto(sp.id); if (!b) continue;
+      try { out.push(new File([b], fileName(sp, i), { type: "image/jpeg" })); } catch (e) {}
+    }
+    return out;
+  }
+  function download(name, body, type){
+    const b = body instanceof Blob ? body : new Blob([body], { type: type || "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(b), a = document.createElement("a");
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+  const say = (t, bad, copy) => { spotMsg = t; spotMsgBad = !!bad; spotCopy = !!copy; renderSpots(); };
+  // the ladder: text + photos → text alone → a download → the text on screen
+  async function sendSpots(){
+    const body = spotText(), title = u("spotsTitle");
+    let files = []; try { files = await photoFiles(); } catch (e) { files = []; }
+    if (files.length) {
+      try { if (navigator.share && navigator.canShare && navigator.canShare({ files })) { await navigator.share({ title, text: body, files }); return say(u("sentP")); } }
+      catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    try { if (navigator.share) { await navigator.share({ title, text: body }); return say(files.length ? u("sentNoP") : u("sentT"), !!files.length); } }
+    catch (e) { if (e && e.name === "AbortError") return; }
+    try { download("SynRG-26-my-notes.txt", body); return say(u("dl") + (files.length ? " " + u("photosOnly").replace("{n}", files.length) : ""), false, true); }
+    catch (e) { return say("", false, true); }
+  }
+  // photos ALONE (no text) — that is what makes iPhone offer "Save images"
+  async function saveSpotPhotos(){
+    let files = []; try { files = await photoFiles(); } catch (e) { files = []; }
+    if (!files.length) return say(u("photosNone"), true);
+    try { if (navigator.share && navigator.canShare && navigator.canShare({ files })) { await navigator.share({ files }); return say(u("photosSaved")); } }
+    catch (e) { if (e && e.name === "AbortError") return; }
+    let n = 0;
+    for (const f of files) { try { download(f.name, f); n++; } catch (e) {} await new Promise(r => setTimeout(r, 250)); }
+    say(n ? u("photosDl").replace("{n}", n) : u("photosFail"), !n);
+  }
+  pruneEmpty().then(() => { if (spots.length) renderSpots(); });
+
   /* ---------- live ---------- */
   function tick(){
     const now = new Date(), s = state(now), card = $("#now-card");
@@ -1018,6 +1365,8 @@ const CONFIG = {
         (c.where ? '<p class="now-where">' + whereHtml(c.where) + '</p>' : '') +
         (c.ride ? '<span class="ride ' + c.ride + '">' + esc(u(c.ride)) + '</span>' : '') +
         (c.session && mineText(c.session) ? '<p class="b-mine">' + mineText(c.session) + '</p>' : '') +
+        (c.session && SU.mine[c.session] ? spotsForHtml(SU.mine[c.session]) : '') +
+        (c.spot ? '<button type="button" class="spot-btn" data-spot>' + esc(u("spotBtn")) + '</button>' : '') +
         '<div class="meter"><span style="width:' + pct.toFixed(1) + '%"></span></div><p class="meter-label">' + esc(dur(mins(c.endAt - now)) + " " + u("left")) + '</p>' +
         (s.next ? '<p class="up-next">' + esc(u("next")) + ' ' + esc(nextWhen(s.next, now)) + ': <b>' + esc(L(s.next.title)) + '</b></p>' : '');
     } else {
@@ -1028,6 +1377,7 @@ const CONFIG = {
       card.innerHTML = '<p class="now-time">' + esc(overnight ? u("overnight") : u("between")) + '</p><h2 class="now-title">' + esc(u("free")) + '</h2>' +
         (s.next ? '<p class="up-next">' + esc(u("next")) + ' ' + esc(nextWhen(s.next, now)) + ': <b>' + esc(L(s.next.title)) + '</b></p>' : '');
     }
+    card.querySelectorAll("[data-spot]").forEach(bt => bt.onclick = newSpot);
     for (const b of all){
       const node = document.getElementById(b.id); if (!node) continue;
       const badge = node.querySelector(".badge");

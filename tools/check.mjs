@@ -203,6 +203,92 @@ await at('2026-10-01T10:00:00-04:00')
 ok("no signal: says so, buttons off, no count badges, the rest of the page still works", !(await js("!!document.querySelector(\".count\")")) && /needs a signal/.test(await js('document.getElementById("me-box").textContent')) && (await js('[...document.querySelectorAll(".pick")].every(b => b.disabled)')) && (await js('document.querySelectorAll(".day").length')) === 3)
 await js('localStorage.removeItem("fakeOff"); localStorage.removeItem("synrg26.me"); localStorage.removeItem("synrg26.mine"); 1')
 
+/* ── 📷 spotted something (10-02): photo + question from the tours, for a working group ── */
+{
+  const QR = path.join(here, '..', 'qr', 'synrg-qr.png')      // stands in for a camera photo
+  const sheet = () => js('document.getElementById("spot-sheet").hidden === false')
+  const setVal = (id, v) => js(`(() => { const e = document.getElementById('${id}'); e.value = ${JSON.stringify(v)}; e.dispatchEvent(new Event('input')); return 1 })()`)
+  const photo = async () => {
+    const doc = await send('DOM.getDocument', { depth: 0 })
+    const { nodeId } = await send('DOM.querySelector', { nodeId: doc.root.nodeId, selector: '#spot-cam' })
+    await send('DOM.setFileInputFiles', { nodeId, files: [QR] })
+    for (let i = 0; i < 30; i++) { await sleep(150); if (/blob:/.test(await js('document.getElementById("spot-ph")?.style.backgroundImage || ""'))) return true }
+    return false
+  }
+  await js('localStorage.removeItem("synrg26.spots"); localStorage.removeItem("synrg26.me"); localStorage.removeItem("synrg26.mine"); indexedDB.deleteDatabase("synrg26"); 1'); await sleep(300)
+  await send('DOM.enable')
+
+  await at('2026-10-06T15:00:00-04:00')
+  ok('📷 a camera button on every screen, above the bottom bar', await js('!document.getElementById("spot-fab").hidden && document.getElementById("spot-fab").getBoundingClientRect().bottom < document.querySelector(".jumpbar").getBoundingClientRect().top'))
+  ok('both tours (Overdevest Tue, Lucas Wed) carry a "Spotted something?" button; nothing else does', (await js('[...document.querySelectorAll("#days [data-spot]")].map(b => b.closest(".card").querySelector(".b-title").textContent.replace(/Now|Next/, "")).join("|")')) === 'Nursery tour|Tour of Lucas Greenhouses', await js('[...document.querySelectorAll("#days [data-spot]")].map(b => b.closest(".card").textContent.slice(0, 40))'))
+  ok('Tue 3pm, on the tour: Right now offers it too', /Nursery tour/.test(await now()) && await js('!!document.querySelector("#now-card [data-spot]")'))
+  ok('nothing spotted yet: the section says how it works', /On the tours, tap 📷/.test(await js('document.getElementById("spots").textContent')))
+  await js('document.querySelector("#now-card [data-spot]").click(); 1'); await sleep(300)
+  ok('tap: a sheet opens, stamped with the tour and the time', (await sheet()) && /Nursery tour · Tue 3pm/.test(await js('document.querySelector("#spot-sheet .where").textContent')), await js('document.querySelector("#spot-sheet .where")?.textContent'))
+  ok('…a photo is optional, said plainly; the floating button hides behind it', /A photo is optional/.test(await js('document.getElementById("spot-ph").textContent')) && await js('document.getElementById("spot-fab").hidden'))
+  ok('the sheet fits a phone', await fits())
+  ok('the photo is taken, shrunk and stored on the phone', await photo())
+  ok('…and says so', /Photo added/.test(await js('document.getElementById("toast").textContent')))
+  await setVal('spot-name', 'Rooting tunnel misting')
+  await setVal('spot-note', 'How often does the mist run on cuttings?')
+  await js('[...document.querySelectorAll("#spot-g button")].find(b => b.dataset.g === "propagation").click(); 1')
+  ok('one group at a time: Propagation on, Not sure yet off', await js('document.querySelector("#spot-g [data-g=propagation]").classList.contains("on") && !document.querySelector("#spot-g [data-g=\'\']").classList.contains("on") && document.querySelectorAll("#spot-g .on").length === 1'))
+  await shot('spot-sheet.png')
+  await js('document.getElementById("spot-done").click(); 1'); await sleep(400)
+  ok('Done: the list shows it — name, tour + time, the group, the note, the photo', await js(`(() => { const r = document.querySelector('#spot-list .spot-row'); return !!r && /Rooting tunnel misting/.test(r.textContent) && /Nursery tour · Tue 3pm/.test(r.textContent) && /→ Propagation/.test(r.textContent) && /How often/.test(r.textContent) && /blob:/.test(r.querySelector('.th').style.backgroundImage) })()`), await js('document.getElementById("spot-list").textContent'))
+  ok('the camera button counts them (1)', (await js('document.querySelector("#spot-fab .n")?.textContent')) === '1')
+  ok('Propagation\'s cards (both sessions) say "Your 1 tour note for this group"', await js(`['s1', 's2'].every(k => /Your 1 tour note for this group: Rooting tunnel misting/.test(document.querySelector('.grp[data-s=' + k + '][data-g=propagation]').textContent)) && !/tour note/.test(document.querySelector('.grp[data-s=s1][data-g=shipping]').textContent)`))
+  await js('document.getElementById("spot-fab").click(); 1'); await sleep(200)
+  await js('document.getElementById("spot-x").click(); 1'); await sleep(300)
+  ok('opened and closed with nothing in it: no blank left behind', (await js('JSON.parse(localStorage.getItem("synrg26.spots")).length')) === 1)
+
+  await at('2026-10-06T15:05:00-04:00')
+  ok('a reload keeps the note AND the photo (photo in the phone\'s own store)', /Rooting tunnel misting/.test(await js('document.getElementById("spot-list").textContent')) && await (async () => { for (let i = 0; i < 20; i++) { await sleep(150); if (/blob:/.test(await js('document.querySelector("#spot-list .th").style.backgroundImage'))) return true } return false })())
+
+  await at('2026-10-07T15:00:00-04:00')
+  ok('Wed 3pm at Lucas: Right now offers it', /Tour of Lucas Greenhouses/.test(await now()) && await js('!!document.querySelector("#now-card [data-spot]")'))
+  await js('document.querySelector("#now-card [data-spot]").click(); 1'); await sleep(300)
+  ok('…stamped "Tour of Lucas Greenhouses · Wed 3pm"', /Tour of Lucas Greenhouses · Wed 3pm/.test(await js('document.querySelector("#spot-sheet .where").textContent')))
+  await setVal('spot-name', 'Boom irrigation on the mums')
+  await js('[...document.querySelectorAll("#spot-g button")].find(b => b.dataset.g === "propagation").click(); 1')
+  await js('document.getElementById("spot-done").click(); 1'); await sleep(400)
+  ok('two notes for Propagation now: "Your 2 tour notes", both named', /Your 2 tour notes for this group: Rooting tunnel misting, Boom irrigation on the mums/.test(await js('document.querySelector(".grp[data-s=s2][data-g=propagation]").textContent')))
+
+  // Bob (the fake server has him in Propagation for Session 1)
+  await js('localStorage.setItem("synrg26.me", JSON.stringify({ id: "p2", name: "Bob Smith", company: "Willoway" })); 1')
+  await at('2026-10-07T08:20:00-04:00')
+  await sleep(400)
+  ok('in your own session, Right now reminds you of your tour notes', /Your 2 tour notes for this group/.test(await now()), await now())
+  await js('document.getElementById("spot-fab").click(); 1'); await sleep(300)
+  ok('your own groups come first in the picker, marked "your group"', /your group/.test(await js('document.querySelectorAll("#spot-g button")[1].textContent')) && (await js('document.querySelectorAll("#spot-g button")[1].dataset.g')) === 'propagation')
+  await js('document.getElementById("spot-x").click(); 1'); await sleep(300)
+
+  // send to myself: no share sheet here → a file + the text on screen to copy
+  await send('Browser.setDownloadBehavior', { behavior: 'deny' }).catch(() => {})
+  await js('Object.defineProperty(navigator, "share", { value: undefined, configurable: true }); 1')
+  await js('document.getElementById("spot-send").click(); 1'); await sleep(600)
+  const copied = await js('document.getElementById("spot-copy")?.value || ""')
+  ok('Send to myself with no share sheet: the notes appear to copy, nothing lost', /SynRG ’26 — things I spotted/.test(copied) && /1\. Rooting tunnel misting/.test(copied) && /How often does the mist run/.test(copied) && /Bring to: Propagation/.test(copied) && /photo on my phone — spotted-1-Rooting-tunnel-misting\.jpg/.test(copied), copied)
+  ok('…and it says the photos are still only on this phone', /1 photos are only on this phone/.test(await js('document.getElementById("spot-acts").textContent')))
+  ok('"Save my 1 photos" is offered', /Save my 1 photos/.test(await js('document.getElementById("spot-acts").textContent')))
+
+  // delete: two taps, and it warns the photo is the only copy
+  await js('document.querySelector("#spot-list .spot-row").click(); 1'); await sleep(300)
+  await js('document.getElementById("spot-d1").click(); 1'); await sleep(100)
+  ok('Delete asks first, and warns the photo is the only copy', /Delete “Rooting tunnel misting”\?/.test(await js('document.getElementById("spot-del").textContent')) && /only copy/.test(await js('document.getElementById("spot-del").textContent')))
+  await js('document.getElementById("spot-keep").click(); 1'); await sleep(100)
+  ok('Keep it backs out', !!(await js('document.getElementById("spot-d1")')))
+  await js('document.getElementById("spot-d1").click(); 1'); await sleep(100)
+  await js('document.getElementById("spot-d2").click(); 1'); await sleep(500)
+  ok('Delete: the note goes, and its photo is removed from the phone too', !/Rooting tunnel/.test(await js('document.getElementById("spot-list").textContent')) && (await js('new Promise(r => { const q = indexedDB.open("synrg26"); q.onsuccess = () => { const c = q.result.transaction("photos").objectStore("photos").count(); c.onsuccess = () => r(c.result) } })')) === 0)
+  ok('spotted things fit a phone', await fits())
+  await shot('spots.png')
+
+  await at('2026-10-07T15:00:00-04:00', 'es')
+  ok('Spanish: ¿Vio algo? and the section', /¿Vio/.test(await js('document.getElementById("spot-fab").textContent')) && /Lo que usted vio/.test(await js('document.getElementById("lbl-spots").textContent')) && /Recorrido de Lucas Greenhouses · Mié/.test(await js('document.getElementById("spot-list").textContent')), await js('document.getElementById("spot-list").textContent'))
+  await js('localStorage.removeItem("synrg26.spots"); localStorage.removeItem("synrg26.me"); localStorage.removeItem("synrg26.mine"); localStorage.setItem("synrg26.lang", "en"); indexedDB.deleteDatabase("synrg26"); 1')
+}
+
 console.log(problems.length ? 'PAGE PROBLEMS:\n  ' + [...new Set(problems)].join('\n  ') : 'no page errors')
 console.log(`check: ${pass} passed, ${fail} failed`)
 ws.close(); process.exit(fail || problems.length ? 1 : 0)

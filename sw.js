@@ -1,7 +1,7 @@
 // Offline copy of the schedule page. Network first, so an edit made on GitHub
 // shows as soon as there is signal; the saved copy only answers when the
 // phone is offline (barns and fields have weak signal).
-const CACHE = 'synrg26-v2';
+const CACHE = 'synrg26-v3';
 const SHELL = ['./', './index.html', './icon.svg', './vendor/leaflet/leaflet.js', './vendor/leaflet/leaflet.css'];
 
 self.addEventListener('install', (e) => {
