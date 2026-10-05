@@ -48,7 +48,7 @@ await sleep(400)
 let st = await state()
 ok('the barn outline is saved with its 4 corners', st.areas && st.areas.barn && st.areas.barn.length === 4, st.areas)
 ok('its row says outlined', /outlined/.test(await js(`document.querySelector('.item[data-id=barn]').textContent`)))
-ok('the outline is labelled on the picture', /Tractor barn/.test(await js('document.querySelector(".leaflet-tooltip-pane").textContent')))
+ok('the outline is labelled on the picture', /Tractor garage/.test(await js('document.querySelector(".leaflet-tooltip-pane").textContent')))
 
 // a restroom pin
 await js(`document.querySelector('.item[data-id=wc]').click(); 1`); await sleep(300)

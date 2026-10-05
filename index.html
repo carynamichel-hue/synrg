@@ -16,7 +16,7 @@
 
    Text that appears on the page comes in pairs: { en: "…", es: "…" }.
    A plain "…" string is fine for names that are the same in both languages
-   (Lucas Greenhouses, Tractor barn is NOT — it has a Spanish name).
+   (Lucas Greenhouses, Tractor garage is NOT — it has a Spanish name).
    Anything left as "" shows an orange ADD chip while EDIT_MODE is true.
    ⚑ THIS PAGE IS PUBLIC ON THE INTERNET — no Wi-Fi passwords, no phone
      numbers you would not print on a flyer.
@@ -52,7 +52,7 @@ const CONFIG = {
   //                 together for every name to sit on its own outline)
   places: {
     checkin:    { n: 1, onSite: true, dot: "checkin",     color: "#e03131", map: { en: "Check-in", es: "Registro" }, labelAt: [39.434358, -75.311869], name: { en: "Check-in", es: "Registro" } },
-    barn:       { n: 2, onSite: true, area: "barn",       color: "#f2b33d", map: { en: "Tractor barn", es: "Garaje" }, labelAt: [39.433985, -75.312781], name: { en: "Tractor barn", es: "Garaje de tractores" } },
+    barn:       { n: 2, onSite: true, area: "barn",       color: "#f2b33d", map: { en: "Tractor garage", es: "Garaje" }, labelAt: [39.433985, -75.312781], name: { en: "Tractor garage", es: "Garaje de tractores" } },
     headhouse:  { n: 3, onSite: true, area: "headhouse",  color: "#fd7e14", map: { en: "Headhouse", es: "Headhouse" }, name: { en: "Headhouse", es: "Headhouse" } },
     dock:       { n: 4, onSite: true, area: "dock",       color: "#cc5de8", map: { en: "Loading dock", es: "Área de carga" }, name: { en: "Loading dock", es: "Área de carga" } },
     trial:      { n: 5, onSite: true, area: "trial",      color: "#51cf66", map: { en: "Trial garden", es: "Jardín de pruebas" }, labelAt: [39.434005, -75.311011], name: { en: "Trial garden (around the main office)", es: "Jardín de pruebas (alrededor de la oficina principal)" } },
@@ -420,12 +420,12 @@ const CONFIG = {
     // dots: a single spot (a place or map extra with dot: "<key>")
     dots: { checkin: [39.433914,-75.3118027], conference: [39.4333818,-75.3111023], entrance: [39.4357345,-75.3083003] },
     // a 3rd item = the badge text (default "WC"): several restrooms on the right
-    // (NE) end of the tractor barn, none on the left (Caryn 10-01), one by the dock
+    // (NE) end of the tractor garage, none on the left (Caryn 10-01), one by the dock
     wc: [[39.4340551,-75.3116494,"WCs"],[39.432576,-75.3111345]],
     // where each name sits, if placed on trace.html ("Place the names"); a spot
     // missing here uses its labelAt / the middle of its outline
     labels: {
-      barn: [39.433993,-75.312282],
+      barn: [39.433993,-75.312430],
       checkin: [39.43403,-75.311086],
       trial: [39.433177,-75.311365],
       headhouse: [39.432725,-75.312679],
@@ -439,7 +439,7 @@ const CONFIG = {
   // On the map but not schedule places: shown on the picture and in the legend.
   // area = an outline above; dot = a single spot in map.dots.
   mapExtras: [
-    { sym: "P",  area: "parking", color: "#339af0", map: { en: "Parking", es: "Estacionamiento" }, name: { en: "Parking — across from the tractor barn", es: "Estacionamiento — frente al garaje de tractores" } },
+    { sym: "P",  area: "parking", color: "#339af0", map: { en: "Parking", es: "Estacionamiento" }, name: { en: "Parking — across from the tractor garage", es: "Estacionamiento — frente al garaje de tractores" } },
     { sym: "WC", markers: "wc",   color: "#0f766e", name: { en: "Portable restrooms", es: "Baños portátiles" } },
     // the map does not zoom out to include the entrance when it opens (far: true)
     { sym: "➜",  dot: "entrance", far: true, color: "#1c2b21", map: { en: "➜ Entrance", es: "➜ Entrada" }, name: { en: "Farm entrance (off the main road)", es: "Entrada del vivero (desde la carretera)" } },
